@@ -6,7 +6,7 @@ noble.on('stateChange', function(state) {
     console.log('scanning');
     noble.stopScanning();
     noble.startScanning([], false, function(err) {
-      if(err) {
+      if (err) {
         console.error('Error');
         console.error(err);
       }
@@ -22,8 +22,6 @@ noble.on('discover', function(peripheral) {
   if (peripheral.advertisement.localName !== 'SimpleBLEPeripheral') {
     return;
   }
-
-  
 
   // noble.stopScanning()
   console.log(peripheral);
@@ -49,33 +47,71 @@ noble.on('discover', function(peripheral) {
       }
 
       var service = services[0];
+
+      // f(service, function(c1) { });
+      // f(service, function(c2) { });
+      // f(service, function(c3) { });
+      // f(service, function(c4) { });
+
       console.log('discovered device information service');
 
-      service.discoverCharacteristics(['fff1'], function(err, chars) {
-        console.log('---fff1---')
-        var c1 = chars[0];
-        service.discoverCharacteristics(['fff2'], function(err, chars) {
-          console.log('---fff2---')
-          var c2 = chars[0];
-          service.discoverCharacteristics(['fff3'], function(err, chars) {
-            console.log('---fff3---')
-            var c3 = chars[0];
-            service.discoverCharacteristics(['fff4'], function(err, chars) {
-              console.log('---fff4---')
-              var c4 = chars[0];
-
-              fff1(c1, c2, c3, c4);
-
-
-
-            });
+      const promise = new Promise(function(resolve, reject) {
+        service.discoverCharacteristics(['fff1'], (err, chars) => resolve({c1: chars[0]}));
+      })
+        .then(function(obj) {
+          return new Promise(function(resolve, reject) {
+            service.discoverCharacteristics(['fff2'], (err, chars) => resolve({...obj, c2: chars[0]}));
           });
+        })
+        .then(function(obj) {
+          return new Promise(function(resolve, reject) {
+            service.discoverCharacteristics(['fff3'], (err, chars) => resolve({...obj, c3: chars[0]}));
+          });
+        })
+        .then(function(obj) {
+          return new Promise(function(resolve, reject) {
+            service.discoverCharacteristics(['fff4'], (err, chars) => resolve({...obj, c4: chars[0]}));
+          });
+        })
+        .then(function(obj) {
+          fff1(obj.c1, obj.c2, obj.c3, obj.c4);
         });
-      });
-    })
-  });
-})
 
+      // async function f(service, callback) {
+      //   // let promise = new Promise((resolve, reject) => {
+      //   const c1 = await service.discoverCharacteristics(['fff1'], (err, chars) => callback(chars[0]));
+      //   // });
+
+      //   // let result = await promise;
+
+      //   // console.log(result);
+      // }
+
+      // function f1(callback) {
+      //   service.discoverCharacteristics(['fff1'], (err, chars) => callback(chars[0]));
+      // }
+
+      // service.discoverCharacteristics(['fff1'], function(err, chars) {
+      //   console.log('---fff1---');
+      //   var c1 = chars[0];
+      //   service.discoverCharacteristics(['fff2'], function(err, chars) {
+      //     console.log('---fff2---');
+      //     var c2 = chars[0];
+      //     service.discoverCharacteristics(['fff3'], function(err, chars) {
+      //       console.log('---fff3---');
+      //       var c3 = chars[0];
+      //       service.discoverCharacteristics(['fff4'], function(err, chars) {
+      //         console.log('---fff4---');
+      //         var c4 = chars[0];
+
+      //         fff1(c1, c2, c3, c4);
+      //       });
+      //     });
+      //   });
+      // });
+    });
+  });
+});
 
 function fff1(c1, c2, c3, c4) {
   c1.write(new Buffer([0x03]), true, function(error) {
@@ -88,7 +124,9 @@ function fff1(c1, c2, c3, c4) {
         fff2(c1, c2, c3, c4);
         c1.read(function(error, data) {
           console.log('fff1: read ', data);
-          c1.write(new Buffer([0x01, 0x02, 0x00, 0x00, 0x00, 0x09, 0x01, 0x02, 0x00, 0x00, 0x00, 0x09]), true, function(error) {
+          c1.write(new Buffer([0x01, 0x02, 0x00, 0x00, 0x00, 0x09, 0x01, 0x02, 0x00, 0x00, 0x00, 0x09]), true, function(
+            error,
+          ) {
             console.log('fff1: write 0x010200000009');
             c1.read(function(error, data) {
               console.log('fff1: read ', data);
@@ -104,12 +142,11 @@ function fff1(c1, c2, c3, c4) {
 function fff2(c1, c2, c3, c4) {
   c2.read(function(error, data) {
     console.log('fff2: read ', data);
-  })
+  });
 }
 
-
 function fff3(c1, c2, c3, c4) {
-  setInterval(function(){ 
+  setInterval(function() {
     c3.write(new Buffer([0xff]), true, function(error) {
       console.log('fff3: set ff');
     });
@@ -118,8 +155,9 @@ function fff3(c1, c2, c3, c4) {
 
 function fff4(c1, c2, c3, c4) {
   c4.on('data', function(data, isNotification) {
-    console.log('fff4: ')
+    console.log('fff4: ');
     console.log(data);
+    // buffer.readUIntBE(0, 3)
     // console.log('battery level is now: ', data.readUInt8(0) + '%');
   });
 
@@ -127,7 +165,7 @@ function fff4(c1, c2, c3, c4) {
   c4.subscribe(function(err) {
     if (err) return console.log(err);
     console.log('fff4: notify!');
-    fff3(c1, c2, c3, c4) 
+    fff3(c1, c2, c3, c4);
   });
 }
 
