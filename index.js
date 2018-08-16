@@ -48,10 +48,16 @@ noble.on('discover', function(peripheral) {
 
       var service = services[0];
 
-      // f(service, function(c1) { });
-      // f(service, function(c2) { });
-      // f(service, function(c3) { });
-      // f(service, function(c4) { });
+      // fff1.write 03
+      // fff2.read
+      // fff1.read
+      //
+      // fff1.write 00
+      // fff2.read
+      // fff1.read
+      //
+      // fff1.write time
+      // fff1.read
 
       console.log('discovered device information service');
 
@@ -74,41 +80,50 @@ noble.on('discover', function(peripheral) {
           });
         })
         .then(function(obj) {
-          fff1(obj.c1, obj.c2, obj.c3, obj.c4);
+          return new Promise(function(resolve, reject) {
+            obj.c1.write(new Buffer([0x03]), true, function(err) {
+              console.log('fff1: write 03');
+              resolve(obj);
+            });
+          });
+        })
+        .then(function(obj) {
+          return new Promise(function(resolve, reject) {
+            obj.c1.write(new Buffer([0x00]), true, function(err) {
+              console.log('fff1: write 00');
+              resolve(obj);
+            });
+          });
+        })
+        .then(function(obj) {
+          return new Promise(function(resolve, reject) {
+            obj.c1.write(
+              new Buffer([0x01, 0x02, 0x00, 0x00, 0x00, 0x09, 0x01, 0x02, 0x00, 0x00, 0x00, 0x09]),
+              true,
+              function(err) {
+                console.log('fff1: write 0x010200000009');
+                resolve(obj);
+              },
+            );
+          });
+        })
+        .then(function(obj) {
+          return new Promise(function(resolve, reject) {
+            obj.c2.read(function(err, data) {
+              console.log('fff2: read ', data);
+              resolve(obj);
+            });
+          });
+        })
+        .then(function(obj) {
+          return new Promise(function(resolve, reject) {
+            obj.c1.read(function(error, data) {
+              console.log('fff1: read ', data);
+              // resolve(obj);
+              fff4(obj.c1, obj.c2, obj.c3, obj.c4);
+            });
+          });
         });
-
-      // async function f(service, callback) {
-      //   // let promise = new Promise((resolve, reject) => {
-      //   const c1 = await service.discoverCharacteristics(['fff1'], (err, chars) => callback(chars[0]));
-      //   // });
-
-      //   // let result = await promise;
-
-      //   // console.log(result);
-      // }
-
-      // function f1(callback) {
-      //   service.discoverCharacteristics(['fff1'], (err, chars) => callback(chars[0]));
-      // }
-
-      // service.discoverCharacteristics(['fff1'], function(err, chars) {
-      //   console.log('---fff1---');
-      //   var c1 = chars[0];
-      //   service.discoverCharacteristics(['fff2'], function(err, chars) {
-      //     console.log('---fff2---');
-      //     var c2 = chars[0];
-      //     service.discoverCharacteristics(['fff3'], function(err, chars) {
-      //       console.log('---fff3---');
-      //       var c3 = chars[0];
-      //       service.discoverCharacteristics(['fff4'], function(err, chars) {
-      //         console.log('---fff4---');
-      //         var c4 = chars[0];
-
-      //         fff1(c1, c2, c3, c4);
-      //       });
-      //     });
-      //   });
-      // });
     });
   });
 });
