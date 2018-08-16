@@ -119,70 +119,40 @@ noble.on('discover', function(peripheral) {
           return new Promise(function(resolve, reject) {
             obj.c1.read(function(error, data) {
               console.log('fff1: read ', data);
-              // resolve(obj);
-              fff4(obj.c1, obj.c2, obj.c3, obj.c4);
+              resolve(obj);
+              // fff4(obj.c1, obj.c2, obj.c3, obj.c4);
             });
+          });
+        })
+        .then(function(obj) {
+          return new Promise(function(resolve, reject) {
+            obj.c4.on('data', function(data, isNotification) {
+              console.log('fff4: ');
+              console.log(data);
+              // buffer.readUIntBE(0, 3)
+              // console.log('battery level is now: ', data.readUInt8(0) + '%');
+            });
+
+            // to enable notify
+            obj.c4.subscribe(function(err) {
+              if (err) return console.log(err);
+              console.log('fff4: notify!');
+              resolve(obj);
+            });
+          });
+        })
+        .then(function(obj) {
+          return new Promise(function(resolve, reject) {
+            setInterval(function() {
+              obj.c3.write(new Buffer([0xff]), true, function(error) {
+                console.log('fff3: set ff');
+              });
+            }, 1000);
           });
         });
     });
   });
 });
-
-function fff1(c1, c2, c3, c4) {
-  c1.write(new Buffer([0x03]), true, function(error) {
-    console.log('fff1: write 03');
-    fff2(c1, c2, c3, c4);
-    c1.read(function(error, data) {
-      console.log('fff1: read ', data);
-      c1.write(new Buffer([0x00]), true, function(error) {
-        console.log('fff1: write 00');
-        fff2(c1, c2, c3, c4);
-        c1.read(function(error, data) {
-          console.log('fff1: read ', data);
-          c1.write(new Buffer([0x01, 0x02, 0x00, 0x00, 0x00, 0x09, 0x01, 0x02, 0x00, 0x00, 0x00, 0x09]), true, function(
-            error,
-          ) {
-            console.log('fff1: write 0x010200000009');
-            c1.read(function(error, data) {
-              console.log('fff1: read ', data);
-              fff4(c1, c2, c3, c4);
-            });
-          });
-        });
-      });
-    });
-  });
-}
-
-function fff2(c1, c2, c3, c4) {
-  c2.read(function(error, data) {
-    console.log('fff2: read ', data);
-  });
-}
-
-function fff3(c1, c2, c3, c4) {
-  setInterval(function() {
-    c3.write(new Buffer([0xff]), true, function(error) {
-      console.log('fff3: set ff');
-    });
-  }, 1000);
-}
-
-function fff4(c1, c2, c3, c4) {
-  c4.on('data', function(data, isNotification) {
-    console.log('fff4: ');
-    console.log(data);
-    // buffer.readUIntBE(0, 3)
-    // console.log('battery level is now: ', data.readUInt8(0) + '%');
-  });
-
-  // to enable notify
-  c4.subscribe(function(err) {
-    if (err) return console.log(err);
-    console.log('fff4: notify!');
-    fff3(c1, c2, c3, c4);
-  });
-}
 
 noble.on('warning', function(message) {
   console.log('Warn');
