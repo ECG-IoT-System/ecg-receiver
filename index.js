@@ -11,16 +11,10 @@ fromEvent(noble, 'stateChange')
     tap(state => console.log('current state:', state)),
     filter(state => state === 'poweredOn'),
     tap(state => noble.stopScanning()),
-    tap(state =>
-      noble.startScanning([], false, function(err) {
-        console.log('err', err);
-        if (err) {
-          console.log('=========');
-          console.error('Error');
-          console.error(err);
-        }
-      }),
-    ),
+    mergeMap(state => new Promise((resolve, reject) => noble.startScanning([], false, err => resolve(err)))),
+    tap(err => console.log('err', err)),
+    filter(err => err),
+    tap(err => console.log(err)),
   )
   .subscribe();
 
