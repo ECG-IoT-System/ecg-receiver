@@ -1,6 +1,7 @@
 const Rx = require('rxjs');
-const {Observable, Subject, ReplaySubject, from, of, range, fromEvent, create, bindNodeCallback} = require('rxjs');
-const {tap, map, filter, mergeMap} = require('rxjs/operators');
+const {Observable, Subject, ReplaySubject, from, of, range, fromEvent, create, combineLatest} = require('rxjs');
+const {tap, map, filter, mergeMap, combineAll, switchMap, concatMap} = require('rxjs/operators');
+const now = require('nano-time');
 
 module.exports = function(peripheral) {
   // noble.stopScanning()
@@ -68,25 +69,18 @@ module.exports = function(peripheral) {
         });
       }
 
-      function notify(chr) {
+      function notify(chr, callback) {
         // return new Promise(function(resolve, reject) {
         chr.on('data', function(data, isNotification) {
-          parseChunk(data);
-          console.log('on data', data);
-          // buffer.readUIntBE(0, 3)
-          // console.log('battery level is now: ', data.readUInt8(0) + '%');
+          callback(data, isNotification);
         });
 
         // to enable notify
         chr.subscribe(function(err) {
           if (err) return console.log(err);
-          console.log('fff4: notify!');
-          // resolve(obj);
+          console.log('fff4: subscribe!');
         });
-        // });
       }
-
-      function parseChunk(buf) {}
 
       async function t() {
         var c1 = await discover('fff1');
@@ -94,14 +88,42 @@ module.exports = function(peripheral) {
         var c3 = await discover('fff3');
         var c4 = await discover('fff4');
 
+        var hrstart = process.hrtime();
         await send(c1, new Buffer([0x03]));
         await read(c1);
         await send(c1, new Buffer([0x00]));
         await read(c1);
+        var hrend = process.hrtime(hrstart);
 
-        await send(c1, new Buffer([0x01, 0x02, 0x00, 0x00, 0x00, 0x09, 0x01, 0x02, 0x00, 0x00, 0x00, 0x09]));
+        console.log('diff: ', hrend);
+
+        // [Math.round(hrend / 1e4), new Date(current / 1e6).getUTCHours()];
+
+        var diff = Math.round(hrend[1] / 1e4);
+        var current = now();
+        var hour = new Date(current / 1e6).getUTCHours();
+        var tick = Math.round((current / 1e4) % 1e5);
+
+        console.log('diff:', diff, '(10us)');
+        console.log('hour:', hour, '(hr)');
+        console.log('tick:', tick, '(10us)');
+
+        var timeBuf = [diff, hour, tick];
+
+        timeBuf = timeBuf.map(time => {
+          let result = new Buffer(4);
+          result.writeInt32BE(time);
+          return result;
+        });
+
+        timeBuf = new Buffer.concat(timeBuf);
+        console.log('time buf', timeBuf);
+
+        await send(c1, timeBuf);
         await read(c1);
-        await notify(c4);
+        await notify(c4, function(data, isNotification) {
+          parse(data);
+        });
 
         setInterval(function() {
           send(c3, new Buffer([0xff]));
@@ -110,95 +132,18 @@ module.exports = function(peripheral) {
 
       t();
 
-      // const promise = new Promise(function(resolve, reject) {
-      //   service.discoverCharacteristics(['fff1'], (err, chars) => resolve(chars[0]));
-      // })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       service.discoverCharacteristics(['fff2'], (err, chars) => resolve({...obj, c2: chars[0]}));
-      //     });
-      //   })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       service.discoverCharacteristics(['fff3'], (err, chars) => resolve({...obj, c3: chars[0]}));
-      //     });
-      //   })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       service.discoverCharacteristics(['fff4'], (err, chars) => resolve({...obj, c4: chars[0]}));
-      //     });
-      //   })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       obj.c1.write(new Buffer([0x03]), true, function(err) {
-      //         console.log('fff1: write 03');
-      //         resolve(obj);
-      //       });
-      //     });
-      //   })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       obj.c1.write(new Buffer([0x00]), true, function(err) {
-      //         console.log('fff1: write 00');
-      //         resolve(obj);
-      //       });
-      //     });
-      //   })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       obj.c1.write(
-      //         new Buffer([0x01, 0x02, 0x00, 0x00, 0x00, 0x09, 0x01, 0x02, 0x00, 0x00, 0x00, 0x09]),
-      //         true,
-      //         function(err) {
-      //           console.log('fff1: write 0x010200000009');
-      //           resolve(obj);
-      //         },
-      //       );
-      //     });
-      //   })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       obj.c2.read(function(err, data) {
-      //         console.log('fff2: read ', data);
-      //         resolve(obj);
-      //       });
-      //     });
-      //   })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       obj.c1.read(function(error, data) {
-      //         console.log('fff1: read ', data);
-      //         resolve(obj);
-      //         // fff4(obj.c1, obj.c2, obj.c3, obj.c4);
-      //       });
-      //     });
-      //   })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       obj.c4.on('data', function(data, isNotification) {
-      //         console.log('fff4: ');
-      //         console.log(data);
-      //         // buffer.readUIntBE(0, 3)
-      //         // console.log('battery level is now: ', data.readUInt8(0) + '%');
-      //       });
+      function parse(data) {
+        var packet = {};
+        packet.id = data.readUInt8(0, 1);
+        packet.sequence = data.readUInt8(1, 1);
+        packet.hour = data.readUInt8(2, 1);
+        packet.minute = data.readUInt8(3, 1);
+        packet.second = data.readUInt8(4, 1);
+        packet.millisecond = data.readUInt16BE(5, 2);
+        packet.debug = data.readUInt8(7, 1);
+        packet.body = data.slice(8);
 
-      //       // to enable notify
-      //       obj.c4.subscribe(function(err) {
-      //         if (err) return console.log(err);
-      //         console.log('fff4: notify!');
-      //         resolve(obj);
-      //       });
-      //     });
-      //   })
-      //   .then(function(obj) {
-      //     return new Promise(function(resolve, reject) {
-      //       setInterval(function() {
-      //         obj.c3.write(new Buffer([0xff]), true, function(error) {
-      //           console.log('fff3: set ff');
-      //         });
-      //       }, 1000);
-      //     });
-      //   });
+        console.log(packet);
+      }
     });
-  // });
 };

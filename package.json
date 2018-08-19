@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "7.10": "^1.0.0",
+    "nano-time": "^1.0.0",
     "noble": "^1.9.1",
     "rxjs": "^6.2.2"
   }
