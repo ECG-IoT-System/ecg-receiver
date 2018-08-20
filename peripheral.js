@@ -61,7 +61,25 @@ module.exports = async function(peripheral) {
   await send(c1, timeBuf);
   await read(c1);
   await notify(c4, function(data, isNotification) {
-    parse(data);
+    var packet = parse(data);
+    if (packet.sequence == 1 || packet.sequence == 2) {
+      var arr = [];
+      for (var i = 0; i < 120; i++) {
+        arr.push(packet.body.readInt16BE(2 * i, 2) / 72.2);
+      }
+      console.log(arr);
+    } else if (packet.sequence == 3) {
+      var arr = [];
+      var garr = [];
+      for (var i = 0; i < 16; i++) {
+        arr.push(packet.body.readInt16BE(2 * i, 2) / 72.2);
+      }
+      for (var i = 0; i < 30; i++) {
+        garr.push((packet.body.readInt8(32 + i, 2) * 15.6) / 1000);
+      }
+      console.log(arr);
+      console.log(garr);
+    }
   });
 
   setInterval(function() {
@@ -142,4 +160,5 @@ function parse(data) {
   packet.body = data.slice(8);
 
   console.log(packet);
+  return packet;
 }
