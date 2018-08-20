@@ -31,9 +31,10 @@ module.exports = async function(peripheral) {
   var c3 = await discoverChar(service, 'fff3');
   var c4 = await discoverChar(service, 'fff4');
 
-  var hrstart = process.hrtime();
   await send(c1, new Buffer([0x03]));
   await read(c1);
+
+  var hrstart = process.hrtime();
   await send(c1, new Buffer([0x00]));
   await read(c1);
   var hrend = process.hrtime(hrstart);
@@ -41,17 +42,22 @@ module.exports = async function(peripheral) {
   var diff = Math.round(hrend[1] / 1e4);
   var current = now();
   var hour = new Date(current / 1e6).getUTCHours();
-  var tick = Math.round((current / 1e4) % 1e5);
+  var tick = Math.round((current / 1e4) % 3.6e8);
 
+  console.log(new Date().toUTCString());
   console.log('diff:', diff, '(10us)');
   console.log('hour:', hour, '(hr)');
   console.log('tick:', tick, '(10us)');
+  console.log('  min:', Math.floor(tick / 100 / 1000 / 60), '(min)');
+  console.log('  sec:', Math.floor((tick / 100 / 1000) % 60), '(sec)');
+  console.log('  ms :', Math.floor((tick / 100) % 1000), '(ms)');
+  console.log('  10u:', Math.floor(tick % 100), '(10us)');
 
   var timeBuf = [diff, hour, tick];
 
   timeBuf = timeBuf.map(time => {
     let result = new Buffer(4);
-    result.writeInt32BE(time);
+    result.writeUInt32LE(time);
     return result;
   });
 
@@ -67,7 +73,7 @@ module.exports = async function(peripheral) {
       for (var i = 0; i < 120; i++) {
         arr.push(packet.body.readInt16BE(2 * i, 2) / 72.2);
       }
-      console.log(arr);
+      // console.log(arr);
     } else if (packet.sequence == 3) {
       var arr = [];
       var garr = [];
@@ -77,8 +83,8 @@ module.exports = async function(peripheral) {
       for (var i = 0; i < 30; i++) {
         garr.push((packet.body.readInt8(32 + i, 2) * 15.6) / 1000);
       }
-      console.log(arr);
-      console.log(garr);
+      // console.log(arr);
+      // console.log(garr);
     }
   });
 
@@ -148,6 +154,7 @@ function notify(chr, callback) {
   });
 }
 
+var c = 0;
 function parse(data) {
   var packet = {};
   packet.id = data.readUInt8(0, 1);
@@ -159,6 +166,16 @@ function parse(data) {
   packet.debug = data.readUInt8(7, 1);
   packet.body = data.slice(8);
 
-  console.log(packet);
+  // console.log(data.length, data);
+
+  var p = packet;
+  if (p.sequence == 1) {
+    console.log('\x1b[33mid\tseq\thr\tmin\tsec\tms\tdebug\x1b[0m');
+  }
+
+  color = p.sequence <= 3 ? 32 : p.sequence == 255 ? 35 : 31;
+  console.log(
+    `\x1b[${color}m${p.id}\t${p.sequence}\t${p.hour}\t${p.minute}\t${p.second}\t${p.millisecond}\t${p.debug}\x1b[0m`,
+  );
   return packet;
 }
