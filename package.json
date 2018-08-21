@@ -1,6 +1,6 @@
 {
-  "name": "bluez",
-  "version": "1.0.0",
+  "name": "ecg-receiver",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
