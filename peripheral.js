@@ -1,9 +1,41 @@
-const Rx = require('rxjs');
-const {Observable, Subject, ReplaySubject, from, of, range, fromEvent, create, combineLatest} = require('rxjs');
-const {tap, map, filter, mergeMap, combineAll, switchMap, concatMap} = require('rxjs/operators');
-const now = require('nano-time');
+const Service = require('./service');
+const Timer = require('./timer');
+
+class Peripheral {
+  constructor(peripheral) {
+    this.peripheral = peripheral;
+  }
+
+  connect() {
+    return new Promise((resolve, reject) => {
+      this.peripheral.connect(err => {
+        if (err) return console.error('Error connecting: ' + err);
+        console.log('Connected to peripheral: ' + this.peripheral.uuid);
+        resolve();
+      });
+    });
+  }
+
+  findService(uuid) {
+    return new Promise((resolve, reject) => {
+      this.peripheral.discoverServices([uuid], (error, services) => {
+        if (services.length === 0) return console.log('error: service is not found');
+
+        var service = services[0];
+
+        if (service.uuid !== uuid) return console.log('error: service uuid is not ' + uuid);
+
+        this[uuid] = new Service(service);
+
+        resolve(this[uuid]);
+      });
+    });
+  }
+}
 
 module.exports = async function(peripheral) {
+  peripheral = new Peripheral(peripheral);
+
   // connect peripheral
   //
   // peripheral discover service fff0
@@ -22,51 +54,30 @@ module.exports = async function(peripheral) {
   // fff4.notify
   // fff3.set ff
   //
-  await connect(peripheral);
 
-  var service = await discoverService(peripheral, 'fff0');
+  await peripheral.connect();
 
-  var c1 = await discoverChar(service, 'fff1');
-  var c2 = await discoverChar(service, 'fff2');
-  var c3 = await discoverChar(service, 'fff3');
-  var c4 = await discoverChar(service, 'fff4');
+  var service = await peripheral.findService('fff0');
 
-  await send(c1, new Buffer([0x03]));
-  await read(c1);
+  var c1 = await service.findChar('fff1');
+  var c2 = await service.findChar('fff2');
+  var c3 = await service.findChar('fff3');
+  var c4 = await service.findChar('fff4');
 
-  var hrstart = process.hrtime();
-  await send(c1, new Buffer([0x00]));
-  await read(c1);
-  var hrend = process.hrtime(hrstart);
+  await c1.send(new Buffer([0x03]));
+  await c1.read();
 
-  var diff = Math.round(hrend[1] / 1e4);
-  var current = now();
-  var hour = new Date(current / 1e6).getUTCHours();
-  var tick = Math.round((current / 1e4) % 3.6e8);
+  var t = new Timer();
 
-  console.log(new Date().toUTCString());
-  console.log('diff:', diff, '(10us)');
-  console.log('hour:', hour, '(hr)');
-  console.log('tick:', tick, '(10us)');
-  console.log('  min:', Math.floor(tick / 100 / 1000 / 60), '(min)');
-  console.log('  sec:', Math.floor((tick / 100 / 1000) % 60), '(sec)');
-  console.log('  ms :', Math.floor((tick / 100) % 1000), '(ms)');
-  console.log('  10u:', Math.floor(tick % 100), '(10us)');
+  t.start();
+  await c1.send(new Buffer([0x00]));
+  await c1.read();
+  t.end();
 
-  var timeBuf = [diff, hour, tick];
-
-  timeBuf = timeBuf.map(time => {
-    let result = new Buffer(4);
-    result.writeUInt32LE(time);
-    return result;
-  });
-
-  timeBuf = new Buffer.concat(timeBuf);
-  console.log('time buf', timeBuf);
-
-  await send(c1, timeBuf);
-  await read(c1);
-  await notify(c4, function(data, isNotification) {
+  await c1.send(t.toBuffer());
+  await c1.read();
+  await c4.notify(function(data, isNotification) {
+    console.log(data);
     var packet = parse(data);
     if (packet.sequence == 1 || packet.sequence == 2) {
       var arr = [];
@@ -89,70 +100,9 @@ module.exports = async function(peripheral) {
   });
 
   setInterval(function() {
-    send(c3, new Buffer([0xff]));
+    c3.send(new Buffer([0xff]));
   }, 1000);
 };
-
-function connect(peripheral) {
-  return new Promise(function(resolve, reject) {
-    peripheral.connect(function(err) {
-      if (err) return console.error('Error connecting: ' + err);
-      console.log('Connected to peripheral: ' + peripheral.uuid);
-      resolve();
-    });
-  });
-}
-
-function discoverService(peripheral, uuid) {
-  return new Promise(function(resolve, reject) {
-    peripheral.discoverServices(['fff0'], function(error, services) {
-      if (services.length !== 1) return console.log('error: services is not equal 1');
-
-      var service = services[0];
-
-      if (service.uuid !== 'fff0') return console.log('error: service uuid is not fff0');
-
-      resolve(service);
-    });
-  });
-}
-
-function discoverChar(service, uuid) {
-  return new Promise(function(resolve, reject) {
-    service.discoverCharacteristics([uuid], (err, chars) => resolve(chars[0]));
-  });
-}
-
-function send(chr, content) {
-  return new Promise(function(resolve, reject) {
-    chr.write(content, true, function(err) {
-      console.log(chr.uuid, ': write ', content);
-      resolve(content);
-    });
-  });
-}
-
-function read(chr) {
-  return new Promise(function(resolve, reject) {
-    chr.read(function(err, data) {
-      console.log(chr.uuid, ': read ', data);
-      resolve(data);
-    });
-  });
-}
-
-function notify(chr, callback) {
-  // return new Promise(function(resolve, reject) {
-  chr.on('data', function(data, isNotification) {
-    callback(data, isNotification);
-  });
-
-  // to enable notify
-  chr.subscribe(function(err) {
-    if (err) return console.log(err);
-    console.log('fff4: subscribe!');
-  });
-}
 
 var c = 0;
 function parse(data) {
