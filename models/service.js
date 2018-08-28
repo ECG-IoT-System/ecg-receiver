@@ -1,4 +1,5 @@
 const Characteristic = require('./characteristic');
+
 module.exports = class Service {
   constructor(service) {
     this.service = service;

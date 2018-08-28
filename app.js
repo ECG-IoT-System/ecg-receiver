@@ -2,7 +2,7 @@ const Rx = require('rxjs');
 const {Observable, Subject, ReplaySubject, from, of, range, fromEvent, create, bindNodeCallback} = require('rxjs');
 const {tap, map, filter, mergeMap} = require('rxjs/operators');
 var noble = require('noble');
-var connect = require('./peripheral');
+var connect = require('./controllers/connect');
 
 // noble.on('stateChange', function() {});
 
