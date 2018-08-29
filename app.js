@@ -52,6 +52,5 @@ fromEvent(noble, 'discover')
 // });
 
 noble.on('warning', function(message) {
-  console.log('Warn');
-  console.warn(message);
+  console.warn('[Warn]', message);
 });

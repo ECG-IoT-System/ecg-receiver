@@ -10,6 +10,17 @@ module.exports = class Packet {
     this.body = data.slice(8);
     this.data = data;
 
+    var currentDate = new Date();
+    var receiveDate = new Date();
+
+    receiveDate.setHours(this.hour, this.minute, this.second, this.millisecond);
+    console.log(currentDate);
+    console.log(receiveDate);
+
+    console.log((currentDate.getTime() - receiveDate.getTime()) / 1000);
+
+    // this.timestamp =
+
     this.options = options;
     if (this.options.debug) {
       this.print();
@@ -34,26 +45,25 @@ module.exports = class Packet {
   }
 
   parse() {
-    this.ecgSignal = {};
-    this.gSensor = {};
+    this.ecgSignal = [];
+    this.gSensor = [];
 
-    if (packet.sequence == 1 || packet.sequence == 2) {
-      var arr = [];
-      for (var i = 0; i < 120; i++) {
-        arr.push(packet.body.readInt16BE(2 * i, 2) / 72.2);
-      }
-      // console.log(arr);
-    } else if (packet.sequence == 3) {
-      var arr = [];
-      var garr = [];
-      for (var i = 0; i < 16; i++) {
-        arr.push(packet.body.readInt16BE(2 * i, 2) / 72.2);
-      }
-      for (var i = 0; i < 30; i++) {
-        garr.push((packet.body.readInt8(32 + i, 2) * 15.6) / 1000);
-      }
-      // console.log(arr);
-      // console.log(garr);
+    switch (this.sequence) {
+      case 1:
+      case 2:
+        for (var i = 0; i < 120; i++) {
+          this.ecgSignal.push(this.body.readInt16BE(2 * i, 2) / 72.2);
+        }
+
+        break;
+      case 3:
+        for (var i = 0; i < 16; i++) {
+          this.ecgSignal.push(packet.body.readInt16BE(2 * i, 2) / 72.2);
+        }
+        for (var i = 0; i < 30; i++) {
+          this.gSensor.push((packet.body.readInt8(32 + i, 2) * 15.6) / 1000);
+        }
+        break;
     }
   }
 };
