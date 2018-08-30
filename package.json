@@ -13,7 +13,6 @@
     "@google-cloud/logging-winston": "^0.9.0",
     "nano-time": "^1.0.0",
     "noble": "^1.9.1",
-    "rxjs": "^6.2.2",
     "winston": "^3.0.0"
   }
 }
