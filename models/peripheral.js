@@ -1,4 +1,5 @@
 const Service = require('./service');
+const errors = require('../config/errors');
 
 module.exports = class Peripheral {
   constructor(peripheral) {
@@ -8,7 +9,8 @@ module.exports = class Peripheral {
   connect() {
     return new Promise((resolve, reject) => {
       this.peripheral.connect(err => {
-        if (err) return console.error('Error connecting: ' + err);
+        if (err) return errors('ConnectionError: ' + err + ' on peripheral ' + this.peripheral.id);
+
         resolve();
       });
     });
@@ -16,12 +18,18 @@ module.exports = class Peripheral {
 
   findService(uuid) {
     return new Promise((resolve, reject) => {
-      this.peripheral.discoverServices([uuid], (error, services) => {
-        if (services.length === 0) return console.log('error: service is not found');
+      this.peripheral.discoverServices([uuid], (err, services) => {
+        if (err)
+          return errors(
+            'DiscoverServiceError: ' + 'service ' + uuid + ' has ' + err + ' on peripheral ' + this.peripheral.id,
+          );
 
         var service = services[0];
 
-        if (service.uuid !== uuid) return console.log('error: service uuid is not ' + uuid);
+        if (service.uuid !== uuid)
+          return errors(
+            'ServiceNotFound: ' + 'can not find the service ' + uuid + ' on peripheral ' + this.peripheral.id,
+          );
 
         this[uuid] = new Service(service);
 

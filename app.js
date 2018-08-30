@@ -8,6 +8,7 @@ noble.on('scanStart', function(a) {
 noble.on('scanStop', function() {
   console.log('stop scan');
 });
+
 var allowDuplicates = true;
 
 noble.on('stateChange', function(state) {
@@ -46,8 +47,4 @@ noble.on('warning', function(message) {
 
 noble.on('unknown', function(message) {
   console.warn('[Unknown]', message);
-});
-
-noble.on('warning', function(message) {
-  console.warn('[Warn]', message);
 });
