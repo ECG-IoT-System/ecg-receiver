@@ -14,10 +14,10 @@ module.exports = class Packet {
     var receiveDate = new Date();
 
     receiveDate.setHours(this.hour, this.minute, this.second, this.millisecond);
-    console.log(currentDate);
-    console.log(receiveDate);
+    // console.log(currentDate);
+    // console.log(receiveDate);
 
-    console.log((currentDate.getTime() - receiveDate.getTime()) / 1000);
+    // console.log((currentDate.getTime() - receiveDate.getTime()) / 1000);
 
     // this.timestamp =
 

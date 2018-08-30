@@ -3,6 +3,15 @@ const Timer = require('../models/timer');
 const Packet = require('../models/packet');
 
 module.exports = async function(peripheral) {
+  var address = peripheral.address;
+  peripheral.on('connect', function(a) {
+    console.log('\x1b[32mperipheral connected\x1b[0m', address);
+  });
+
+  peripheral.on('disconnect', function(a) {
+    console.log('\x1b[31mperipheral disconnect\x1b[0m', address);
+  });
+
   peripheral = new Peripheral(peripheral);
 
   // connect peripheral
@@ -46,7 +55,7 @@ module.exports = async function(peripheral) {
   await c1.send(t.toBuffer());
   await c1.read();
   await c4.notify(function(data, isNotification) {
-    var packet = new Packet(data, {debug: true});
+    var packet = new Packet(data, {debug: false});
     // packet.parse()
   });
 

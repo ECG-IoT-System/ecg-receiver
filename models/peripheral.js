@@ -9,7 +9,6 @@ module.exports = class Peripheral {
     return new Promise((resolve, reject) => {
       this.peripheral.connect(err => {
         if (err) return console.error('Error connecting: ' + err);
-        console.log('Connected to peripheral: ' + this.peripheral.uuid);
         resolve();
       });
     });

@@ -4,52 +4,51 @@ const {tap, map, filter, mergeMap} = require('rxjs/operators');
 var noble = require('noble');
 var connect = require('./controllers/connect');
 
-// noble.on('stateChange', function() {});
+noble.on('scanStart', function(a) {
+  console.log('start scan', a);
+});
 
-fromEvent(noble, 'stateChange')
-  .pipe(
-    tap(state => console.log('current state:', state)),
-    filter(state => state === 'poweredOn'),
-    tap(state => noble.stopScanning()),
-    mergeMap(state => new Promise((resolve, reject) => noble.startScanning([], false, err => resolve(err)))),
-    tap(err => console.log('err', err)),
-    filter(err => err),
-    tap(err => console.log(err)),
-  )
-  .subscribe();
+noble.on('scanStop', function() {
+  console.log('stop scan');
+});
+var allowDuplicates = true;
 
-// noble.on('stateChange', function(state) {
-//   console.log('state change: ', state);
-//   if (state === 'poweredOn') {
-//     console.log('scanning');
-//     noble.stopScanning();
-//     noble.startScanning([], false, function(err) {
-//       if (err) {
-//         console.error('Error');
-//         console.error(err);
-//       }
-//     });
-//   } else {
-//     console.log('not scanning');
-//     noble.stopScanning();
-//   }
-// });
+noble.on('stateChange', function(state) {
+  console.log('state change: ', state);
 
-fromEvent(noble, 'discover')
-  .pipe(
-    tap(p => console.log('Discovered: ' + p.address, p.advertisement.localName, p.rssi)),
-    filter(p => p.advertisement.localName === 'SimpleBLEPeripheral'),
-    tap(p => connect(p)),
-  )
-  .subscribe();
+  if (state === 'poweredOn') {
+    console.log('scanning');
 
-// noble.on('discover', function(peripheral) {
-//   console.log('Discovered: ' + peripheral.address, peripheral.advertisement.localName);
-//   if (peripheral.advertisement.localName !== 'SimpleBLEPeripheral') {
-//     return;
-//   }
-//   connect(peripheral);
-// });
+    setInterval(function() {
+      noble.stopScanning();
+      noble.startScanning([], false, function(err) {
+        if (err) {
+          console.error('Error');
+          console.error(err);
+        }
+      });
+    }, 1000);
+  } else {
+    console.log('not scanning');
+    noble.stopScanning();
+  }
+});
+
+noble.on('discover', function(peripheral) {
+  console.log('Discovered: ' + peripheral.address, peripheral.advertisement.localName);
+  if (peripheral.advertisement.localName !== 'SimpleBLEPeripheral') {
+    return;
+  }
+  connect(peripheral);
+});
+
+noble.on('warning', function(message) {
+  console.warn('[Warn]', message);
+});
+
+noble.on('unknown', function(message) {
+  console.warn('[Unknown]', message);
+});
 
 noble.on('warning', function(message) {
   console.warn('[Warn]', message);
