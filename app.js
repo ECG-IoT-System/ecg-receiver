@@ -1,5 +1,6 @@
 var noble = require('noble');
 var connect = require('./controllers/connect');
+const errors = require('./config/errors');
 
 noble.on('scanStart', function(a) {
   console.log('start scan', a);
@@ -15,15 +16,10 @@ noble.on('stateChange', function(state) {
   console.log('state change: ', state);
 
   if (state === 'poweredOn') {
-    console.log('scanning');
-
     setInterval(function() {
       noble.stopScanning();
       noble.startScanning([], false, function(err) {
-        if (err) {
-          console.error('Error');
-          console.error(err);
-        }
+        if (err) errors('ScanningError: ' + err);
       });
     }, 1000);
   } else {

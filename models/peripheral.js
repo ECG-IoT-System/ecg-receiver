@@ -1,4 +1,3 @@
-const Service = require('./service');
 const errors = require('../config/errors');
 
 module.exports = class Peripheral {
@@ -9,31 +8,25 @@ module.exports = class Peripheral {
   connect() {
     return new Promise((resolve, reject) => {
       this.peripheral.connect(err => {
-        if (err) return errors('ConnectionError: ' + err + ' on peripheral ' + this.peripheral.id);
+        if (err) return errors('ConnectionError: ' + err + ' on peripheral ' + this.peripheral.address);
 
         resolve();
       });
     });
   }
 
-  findService(uuid) {
+  find(svcUuids, chrUuids) {
+    function reducer(obj, svc) {
+      obj[svc.uuid] = svc;
+      return obj;
+    }
+
     return new Promise((resolve, reject) => {
-      this.peripheral.discoverServices([uuid], (err, services) => {
-        if (err)
-          return errors(
-            'DiscoverServiceError: ' + 'service ' + uuid + ' has ' + err + ' on peripheral ' + this.peripheral.id,
-          );
-
-        var service = services[0];
-
-        if (service.uuid !== uuid)
-          return errors(
-            'ServiceNotFound: ' + 'can not find the service ' + uuid + ' on peripheral ' + this.peripheral.id,
-          );
-
-        this[uuid] = new Service(service);
-
-        resolve(this[uuid]);
+      this.peripheral.discoverSomeServicesAndCharacteristics(svcUuids, chrUuids, function(err, svcs, chrs) {
+        resolve({
+          svcs: svcs ? svcs.reduce(reducer, {}) : {},
+          chrs: chrs ? chrs.reduce(reducer, {}) : {},
+        });
       });
     });
   }

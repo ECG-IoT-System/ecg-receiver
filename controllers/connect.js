@@ -1,6 +1,7 @@
 const Peripheral = require('../models/peripheral');
 const Timer = require('../models/timer');
 const Packet = require('../models/packet');
+const Characteristic = require('../models/characteristic');
 
 module.exports = async function(peripheral) {
   var address = peripheral.address;
@@ -35,12 +36,14 @@ module.exports = async function(peripheral) {
 
   await peripheral.connect();
 
-  var service = await peripheral.findService('fff0');
+  var p = await peripheral.find(['fff0'], ['fff1', 'fff2', 'fff3', 'fff4']);
+  // console.log(p);
+  // process.exit();
 
-  var c1 = await service.findChar('fff1');
-  var c2 = await service.findChar('fff2');
-  var c3 = await service.findChar('fff3');
-  var c4 = await service.findChar('fff4');
+  var c1 = new Characteristic(p.chrs['fff1']);
+  var c2 = new Characteristic(p.chrs['fff2']);
+  var c3 = new Characteristic(p.chrs['fff3']);
+  var c4 = new Characteristic(p.chrs['fff4']);
 
   await c1.send(new Buffer([0x03]));
   await c1.read();
