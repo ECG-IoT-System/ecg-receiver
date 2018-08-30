@@ -36,6 +36,7 @@ noble.on('discover', function(peripheral) {
   if (peripheral.advertisement.localName !== 'SimpleBLEPeripheral') {
     return;
   }
+  noble.stopScanning();
   connect(peripheral);
 });
 
