@@ -1,4 +1,5 @@
 const errors = require('../config/errors');
+const Characteristic = require('./characteristic');
 
 module.exports = class Peripheral {
   constructor(peripheral) {
@@ -17,7 +18,13 @@ module.exports = class Peripheral {
 
   find(svcUuids, chrUuids) {
     function reducer(obj, svc) {
-      obj[svc.uuid] = svc;
+      switch (svc.constructor.name) {
+        case 'Characteristic':
+          obj[svc.uuid] = new Characteristic(svc);
+          break;
+        default:
+          obj[svc.uuid] = svc;
+      }
       return obj;
     }
 

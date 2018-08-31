@@ -1,6 +1,8 @@
+const Timer = require('../models/timer');
+
 module.exports = class Characteristic {
-  constructor(characteristic) {
-    this.chr = characteristic;
+  constructor(chr) {
+    this.chr = chr;
   }
 
   send(content) {
@@ -37,5 +39,23 @@ module.exports = class Characteristic {
         resolve();
       });
     });
+  }
+
+  async initialize() {
+    await this.send(new Buffer([0x03]));
+    await this.read();
+    await this.setTime();
+  }
+
+  async setTime() {
+    var t = new Timer();
+
+    t.start();
+    await this.send(new Buffer([0x00]));
+    await this.read();
+    t.end();
+
+    await this.send(t.toBuffer());
+    await this.read();
   }
 };
