@@ -3,41 +3,37 @@ const Timer = require('../models/timer');
 module.exports = class Characteristic {
   constructor(chr) {
     this.chr = chr;
+    this.address = chr._peripheralId;
+    this.uuid = chr.uuid;
   }
 
   send(content) {
     return new Promise((resolve, reject) => {
       this.chr.write(content, true, err => {
-        console.log(this.chr.uuid, ': write ', content);
+        console.log('[Write]', this.address, this.uuid, content);
         resolve(content);
       });
-    }).catch(error => {
-      console.log(error);
     });
   }
 
   read() {
     return new Promise((resolve, reject) => {
       this.chr.read((err, data) => {
-        console.log(this.chr.uuid, ': read ', data);
+        console.log('[Read]', this.address, this.uuid, data);
         resolve(data);
       });
     });
   }
 
-  notify(callback) {
-    return new Promise((resolve, reject) => {
-      this.chr.on('data', (data, isNotification) => {
-        callback(data, isNotification);
-      });
+  async notify(callback) {
+    this.chr.on('data', (data, isNotification) => {
+      // console.log('[Notify]', this.address, this.uuid, data);
+      callback(data, isNotification);
+    });
 
-      // console.log(this.chr);
-      // to enable notify
-      this.chr.subscribe(err => {
-        if (err) return console.log(err);
-        console.log('fff4: subscribe!');
-        resolve();
-      });
+    this.chr.subscribe(err => {
+      if (err) return console.log(err);
+      console.log('[Subscribe]', this.address, this.uuid);
     });
   }
 

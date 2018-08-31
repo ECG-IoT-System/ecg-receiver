@@ -12,17 +12,22 @@ module.exports = class Timer {
     this.diff = Math.round(this.hrend[0] + this.hrend[1] / 1e4);
   }
 
-  print() {
-    console.log(new Date().toUTCString());
-    console.log('diff:', this.diff, '(10us)');
-    console.log('hour:', this.hour, '(hr)');
-    console.log('tick:', this.tick, '(10us)');
-    console.log('  min:', Math.floor(this.tick / 100 / 1000 / 60), '(min)');
-    console.log('  sec:', Math.floor((this.tick / 100 / 1000) % 60), '(sec)');
-    console.log('  ms :', Math.floor((this.tick / 100) % 1000), '(ms)');
-    console.log('  10u:', Math.floor(this.tick % 100), '(10us)');
+  toJson() {
+    return {
+      time: new Date().toISOString(),
+      diff: this.diff,
+      hour: this.hour,
+      tick: this.tick,
+      min: Math.floor(this.tick / 100 / 1000 / 60),
+      sec: Math.floor((this.tick / 100 / 1000) % 60),
+      ms: Math.floor((this.tick / 100) % 1000),
+      us: Math.floor((this.tick * 10) % 1000),
+    };
   }
 
+  // 4 bytes unsigned integer: diff time
+  // 4 bytes unsigned integer: hour
+  // 4 bytes unsigned integer: tick (10us)
   toBuffer() {
     this.current = now();
     this.hour = new Date(this.current / 1e6).getUTCHours();
@@ -37,7 +42,7 @@ module.exports = class Timer {
     });
 
     // debug
-    this.print();
+    console.log(this.toJson());
 
     return new Buffer.concat(timeBuf);
   }

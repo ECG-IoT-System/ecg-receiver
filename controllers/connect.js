@@ -3,16 +3,6 @@ const Timer = require('../models/timer');
 const Packet = require('../models/packet');
 
 module.exports = async function(peripheral) {
-  var address = peripheral.address;
-
-  peripheral.on('connect', function(a) {
-    console.log('\x1b[32mperipheral connected\x1b[0m', address);
-  });
-
-  peripheral.on('disconnect', function(a) {
-    console.log('\x1b[31mperipheral disconnect\x1b[0m', address);
-  });
-
   peripheral = new Peripheral(peripheral);
 
   // connect peripheral
@@ -34,9 +24,15 @@ module.exports = async function(peripheral) {
   // fff3.set ff
   //
 
+  // svc stands for service
+  // chr stands for characteristic
+
   await peripheral.connect();
 
-  var p = await peripheral.find(['fff0'], ['fff1', 'fff3', 'fff4']);
+  var svcUuids = ['fff0'];
+  var chrUuids = ['fff1', 'fff3', 'fff4'];
+
+  var p = await peripheral.find(svcUuids, chrUuids);
 
   var controlChr = p.chrs['fff1'];
   var notifyChr = p.chrs['fff3'];
@@ -44,8 +40,8 @@ module.exports = async function(peripheral) {
 
   controlChr.initialize();
 
-  await subscribeChr.notify(function(data, isNotification) {
-    var packet = new Packet(data, {debug: false});
+  subscribeChr.notify(function(data, isNotification) {
+    var packet = new Packet(data, {debug: true});
     // packet.parse()
   });
 
