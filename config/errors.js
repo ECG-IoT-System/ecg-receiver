@@ -1,16 +1,33 @@
 const {ErrorReporting} = require('@google-cloud/error-reporting');
 
-const env = require('./env.key.json');
+class Error {
+  constructor(key) {
+    // process.env.NODE_ENV = 'staging';
+    key.ignoreEnvironmentCheck = true;
 
-// process.env.NODE_ENV = 'staging';
+    this.key = key;
+    this.errors = new ErrorReporting(key);
+  }
 
-var errors = new ErrorReporting({
-  ignoreEnvironmentCheck: true,
-  projectId: env.projectId,
-  keyFilename: env.keyFilename,
-});
+  isKeyExist() {
+    return key.projectId && key.keyFilename;
+  }
 
-module.exports = function(str) {
-  errors.report(str);
-  console.log('\x1b[31m' + str + '\x1b[0m');
-};
+  report(str) {
+    if (this.isKeyExist()) {
+      this.errors.report(str);
+    }
+    console.log('\x1b[31m' + str + '\x1b[0m');
+  }
+}
+
+try {
+  var key = require('./env.key.json');
+} catch (e) {
+  var key = {};
+  console.log('[Warn] ./config/env.key.json is not found');
+} finally {
+  var error = new Error(key);
+}
+
+module.exports = error.report;
