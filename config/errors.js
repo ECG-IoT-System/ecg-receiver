@@ -10,11 +10,11 @@ class Error {
   }
 
   isKeyExist() {
-    return key.projectId && key.keyFilename;
+    return this.key.projectId && this.key.keyFilename;
   }
 
   report(str) {
-    if (this.isKeyExist()) {
+    if (isKeyExist()) {
       this.errors.report(str);
     }
     console.log('\x1b[31m' + str + '\x1b[0m');
