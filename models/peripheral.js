@@ -5,14 +5,6 @@ module.exports = class Peripheral {
   constructor(peripheral) {
     this.address = peripheral.address;
     this.peripheral = peripheral;
-
-    peripheral.on('connect', function(a) {
-      console.log('\x1b[32m[Peripheral]\x1b[0m Connect', this.address);
-    });
-
-    peripheral.on('disconnect', function(a) {
-      console.log('\x1b[31m[Peripheral]\x1b[0m Disconnect', this.address);
-    });
   }
 
   connect() {

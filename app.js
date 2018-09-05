@@ -22,6 +22,15 @@ noble.on('discover', function(peripheral) {
   console.log('Discovered: ' + peripheral.address, peripheral.advertisement.localName);
 
   noble.stopScanning();
+
+  peripheral.once('connect', function(a) {
+    console.log('\x1b[32m[Peripheral]\x1b[0m Connect', this.address);
+  });
+
+  peripheral.once('disconnect', function(a) {
+    console.log('\x1b[31m[Peripheral]\x1b[0m Disconnect', this.address);
+  });
+
   connect(peripheral);
 });
 
