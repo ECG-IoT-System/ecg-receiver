@@ -3,6 +3,23 @@ const Timer = require('../models/timer');
 const Packet = require('../models/packet');
 
 module.exports = async function(peripheral) {
+  var ta = null;
+  var tb = null;
+  peripheral.once('connect', function(a) {
+    console.log('\x1b[32m[Peripheral]\x1b[0m Connect', this.address);
+  });
+
+  peripheral.once('disconnect', function(a) {
+    if (ta) {
+      console.log('\x1b[36m[Peripheral]\x1b[0m Timer ta stop');
+      clearInterval(ta);
+    }
+    if (tb) {
+      console.log('\x1b[36m[Peripheral]\x1b[0m Timer tb stop');
+      clearInterval(tb);
+    }
+    console.log('\x1b[31m[Peripheral]\x1b[0m Disconnect', this.address);
+  });
   peripheral = new Peripheral(peripheral);
 
   // connect peripheral
@@ -45,11 +62,11 @@ module.exports = async function(peripheral) {
     // packet.parse()
   });
 
-  setInterval(function() {
+  ta = setInterval(function() {
     notifyChr.send(new Buffer([0xff]));
   }, 1000);
 
-  setInterval(function() {
+  tb = setInterval(function() {
     controlChr.setTime();
   }, 8000);
 };
