@@ -10,23 +10,11 @@ module.exports = class Packet {
     this.body = data.slice(8);
     this.data = data;
 
-    var currentDate = new Date();
-    var receiveDate = new Date();
+    this.parse();
+  }
 
-    receiveDate.setHours(this.hour, this.minute, this.second, this.millisecond);
-    // console.log(currentDate);
-    // console.log(receiveDate);
-
-    // console.log((currentDate.getTime() - receiveDate.getTime()) / 1000);
-
-    // this.timestamp =
-
-    this.options = options;
-    if (this.options.debug) {
-      this.print();
-    } else if (!this.options.debug && (this.sequence > 3 || this.sequence == 0)) {
-      this.print();
-    }
+  get() {
+    return this.ecgSignal;
   }
 
   print() {
@@ -58,10 +46,10 @@ module.exports = class Packet {
         break;
       case 3:
         for (var i = 0; i < 16; i++) {
-          this.ecgSignal.push(packet.body.readInt16BE(2 * i, 2) / 72.2);
+          this.ecgSignal.push(this.body.readInt16BE(2 * i, 2) / 72.2);
         }
         for (var i = 0; i < 30; i++) {
-          this.gSensor.push((packet.body.readInt8(32 + i, 2) * 15.6) / 1000);
+          this.gSensor.push((this.body.readInt8(32 + i, 2) * 15.6) / 1000);
         }
         break;
     }

@@ -3,23 +3,20 @@ const Timer = require('../models/timer');
 const Packet = require('../models/packet');
 
 module.exports = async function(peripheral) {
-  var ta = null;
-  var tb = null;
-  peripheral.once('connect', function(a) {
-    console.log('\x1b[32m[Peripheral]\x1b[0m Connect', this.address);
-  });
+  var timerA = null;
+  var timerB = null;
 
   peripheral.once('disconnect', function(a) {
-    if (ta) {
-      console.log('\x1b[36m[Peripheral]\x1b[0m Timer ta stop');
-      clearInterval(ta);
+    if (timerA) {
+      console.log('\x1b[36m[Peripheral]\x1b[0m Timer timerA stop');
+      clearInterval(timerA);
     }
-    if (tb) {
-      console.log('\x1b[36m[Peripheral]\x1b[0m Timer tb stop');
-      clearInterval(tb);
+    if (timerB) {
+      console.log('\x1b[36m[Peripheral]\x1b[0m Timer timerB stop');
+      clearInterval(timerB);
     }
-    console.log('\x1b[31m[Peripheral]\x1b[0m Disconnect', this.address);
   });
+
   peripheral = new Peripheral(peripheral);
 
   // connect peripheral
@@ -57,16 +54,41 @@ module.exports = async function(peripheral) {
 
   controlChr.initialize();
 
-  subscribeChr.notify(function(data, isNotification) {
-    var packet = new Packet(data, {debug: true});
-    // packet.parse()
+  var buffer = [];
+  var timediff = [];
+  subscribeChr.notify((data, isNotification) => {
+    var packet = new Packet(data);
+
+    if (packet.sequence == 1) {
+      timediff.push(new Date());
+      buffer = [];
+    }
+
+    buffer = buffer.concat(packet.get());
+
+    if (timediff.length > 2) {
+      timediff.shift();
+    }
+
+    if (packet.sequence == 3 && timediff.length == 2) {
+      console.log(buffer);
+    }
+
+    var debug = true;
+
+    if (debug) {
+      packet.print();
+    }
+    if (!debug && (packet.sequence > 3 || packet.sequence == 0)) {
+      packet.print();
+    }
   });
 
-  ta = setInterval(function() {
+  timerA = setInterval(function() {
     notifyChr.send(new Buffer([0xff]));
   }, 1000);
 
-  tb = setInterval(function() {
+  timerB = setInterval(function() {
     controlChr.setTime();
   }, 8000);
 };
