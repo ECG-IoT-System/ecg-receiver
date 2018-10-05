@@ -1,6 +1,7 @@
 const Peripheral = require('../models/peripheral');
 const Timer = require('../models/timer');
 const Packet = require('../models/packet');
+const wisepaas = require('../adapter/wisepaas');
 
 module.exports = async function(peripheral) {
   var timerA = null;
@@ -60,19 +61,26 @@ module.exports = async function(peripheral) {
     var packet = new Packet(data);
 
     if (packet.sequence == 1) {
-      timediff.push(new Date());
+      timediff.push(new Date().getTime());
+
+      if (timediff.length > 2) {
+        timediff.shift();
+      }
+
+      if (timediff.length == 2) {
+        console.log(buffer);
+        wisepaas.send(
+          JSON.stringify({
+            timediff,
+            buffer,
+          }),
+        );
+      }
+
       buffer = [];
     }
 
     buffer = buffer.concat(packet.get());
-
-    if (timediff.length > 2) {
-      timediff.shift();
-    }
-
-    if (packet.sequence == 3 && timediff.length == 2) {
-      console.log(buffer);
-    }
 
     var debug = true;
 
