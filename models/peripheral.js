@@ -3,6 +3,7 @@ const Characteristic = require('./characteristic');
 
 module.exports = class Peripheral {
   constructor(peripheral) {
+    this.uuid = peripheral.uuid;
     this.address = peripheral.address;
     this.peripheral = peripheral;
   }

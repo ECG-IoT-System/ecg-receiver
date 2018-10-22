@@ -39,7 +39,7 @@ client.on('error', function(err) {
 //   console.log('pub', msg);
 // }, 1000);
 
-exports.send = function(msg) {
-  client.publish('wisepaas/test', msg);
-  console.log('pub', msg);
+exports.send = function(topic, msg) {
+  client.publish(topic, msg);
+  console.log('pub');
 };

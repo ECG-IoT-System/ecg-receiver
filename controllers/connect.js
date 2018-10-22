@@ -41,6 +41,20 @@ module.exports = async function(peripheral) {
 
   // svc stands for service
   // chr stands for characteristic
+  //
+  // ---
+  // fff2.notify
+  //
+  // timer.start
+  // fff1.write 00
+  // fff2.read.notify
+  // timer.end
+  //
+  // fff1.write time(tick-diff, hour, tick-start)
+  // fff2.read notify (< ms)
+  //
+  // fff4.notify
+  // fff3.set ff
 
   await peripheral.connect();
 
@@ -55,7 +69,7 @@ module.exports = async function(peripheral) {
 
   controlChr.initialize();
 
-  var buffer = [];
+  var signals = [];
   var timediff = [];
   subscribeChr.notify((data, isNotification) => {
     var packet = new Packet(data);
@@ -68,19 +82,21 @@ module.exports = async function(peripheral) {
       }
 
       if (timediff.length == 2) {
-        console.log(buffer);
+        // send(topic, msg)
         wisepaas.send(
+          'wisepaas/device/' + peripheral.uuid,
           JSON.stringify({
-            timediff,
-            buffer,
+            start_at: timediff[0],
+            end_at: timediff[1],
+            signals: signals,
           }),
         );
       }
 
-      buffer = [];
+      signals = [];
     }
 
-    buffer = buffer.concat(packet.get());
+    signals = signals.concat(packet.get());
 
     var debug = true;
 

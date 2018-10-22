@@ -58,7 +58,7 @@ module.exports = class Timer {
   // 4 bytes unsigned integer: tick (10us)
   toBuffer() {
     // can not fix issue #1 on receiver side, so don't waste time on the function before the bug is fixed.
-    return new Buffer(12);
+    // return new Buffer(12);
 
     this.snap();
 
