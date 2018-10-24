@@ -1,4 +1,5 @@
 const Peripheral = require('../models/peripheral');
+const Characteristic = require('../models/characteristic');
 const Timer = require('../models/timer');
 const Packet = require('../models/packet');
 const wisepaas = require('../adapter/wisepaas');
@@ -59,19 +60,21 @@ module.exports = async function(peripheral) {
   await peripheral.connect();
 
   var svcUuids = ['fff0'];
-  var chrUuids = ['fff1', 'fff3', 'fff4'];
+  var chrUuids = ['fff1', 'fff2', 'fff3', 'fff4'];
 
   var p = await peripheral.find(svcUuids, chrUuids);
 
-  var controlChr = p.chrs['fff1'];
-  var notifyChr = p.chrs['fff3'];
-  var subscribeChr = p.chrs['fff4'];
+  var f1 = p.chrs['fff1'];
+  var f2 = p.chrs['fff2'];
+  var f3 = p.chrs['fff3'];
+  var f4 = p.chrs['fff4'];
 
-  controlChr.initialize();
+  f1.initialize();
+  Characteristic.setTime(f1, f2);
 
   var signals = [];
   var timediff = [];
-  subscribeChr.notify((data, isNotification) => {
+  f4.notify((data, isNotification) => {
     var packet = new Packet(data);
 
     if (packet.sequence == 1) {
@@ -109,10 +112,11 @@ module.exports = async function(peripheral) {
   });
 
   timerA = setInterval(function() {
-    notifyChr.send(new Buffer([0xff]));
+    f3.send(new Buffer([0xff]));
   }, 1000);
 
   timerB = setInterval(function() {
-    controlChr.setTime();
+    // f1.setTime();
+    Characteristic.setTime(f1, f2);
   }, 8000);
 };

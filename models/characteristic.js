@@ -40,18 +40,33 @@ module.exports = class Characteristic {
   async initialize() {
     await this.send(new Buffer([0x03]));
     await this.read();
-    await this.setTime();
+    // await this.setTime();
   }
 
-  async setTime() {
+  static async setTime(f1, f2) {
+    f2.chr.subscribe(err => {
+      if (err) return console.log(err);
+      console.log('[Subscribe]', f2.address, f2.uuid);
+    });
+
     var t = new Timer();
+    var isSendTime = false;
 
     t.start();
-    await this.send(new Buffer([0x00]));
-    await this.read();
-    t.end();
 
-    await this.send(t.toBuffer());
-    await this.read();
+    await f1.send(new Buffer([0x00]));
+
+    f2.chr.on('data', async (data, isNotification) => {
+      // console.log('[Notify]', this.address, this.uuid, data);
+      console.log(data);
+
+      if (!isSendTime) {
+        t.end();
+        console.log(t);
+        console.log(t.toBuffer());
+        await f1.send(t.toBuffer());
+        isSendTime = true;
+      }
+    });
   }
 };
