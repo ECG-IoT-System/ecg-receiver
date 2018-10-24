@@ -4,11 +4,24 @@ const Timer = require('../models/timer');
 const Packet = require('../models/packet');
 const wisepaas = require('../adapter/wisepaas');
 
+var list = [];
+
 module.exports = async function(peripheral) {
   var timerA = null;
   var timerB = null;
 
+  peripheral.once('connect', function(a) {
+    list.push(peripheral.address);
+    console.log('\x1b[36m', list, '\x1b[0m');
+  });
+
   peripheral.once('disconnect', function(a) {
+    var index = list.indexOf(peripheral.address);
+    if (index > -1) {
+      list.splice(index, 1);
+    }
+    console.log('\x1b[36m', list, '\x1b[0m');
+
     if (timerA) {
       console.log('\x1b[36m[Peripheral]\x1b[0m Timer timerA stop');
       clearInterval(timerA);
@@ -86,6 +99,7 @@ module.exports = async function(peripheral) {
 
       if (timediff.length == 2) {
         // send(topic, msg)
+        console.log('\x1b[36m [Recieve] ', peripheral.address, '\x1b[0m');
         wisepaas.send(
           'wisepaas/device/' + peripheral.uuid,
           JSON.stringify({
