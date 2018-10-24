@@ -70,7 +70,7 @@ module.exports = async function(peripheral) {
   var f4 = p.chrs['fff4'];
 
   f1.initialize();
-  Characteristic.setTime(f1, f2);
+  Characteristic.setTime(f1, f2, () => {});
 
   var signals = [];
   var timediff = [];
@@ -111,12 +111,20 @@ module.exports = async function(peripheral) {
     }
   });
 
-  timerA = setInterval(function() {
-    f3.send(new Buffer([0xff]));
+  var counter = 0;
+  timerA = setInterval(async function() {
+    new Promise((resolve, reject) => {
+      if (counter++ % 2 == 0) {
+        resolve();
+      } else {
+        Characteristic.setTime(f1, f2, resolve);
+      }
+    }).then(() => {
+      f3.send(new Buffer([0xff]));
+    });
   }, 1000);
 
   timerB = setInterval(function() {
     // f1.setTime();
-    Characteristic.setTime(f1, f2);
   }, 8000);
 };

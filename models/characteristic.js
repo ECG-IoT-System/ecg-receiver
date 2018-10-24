@@ -39,11 +39,10 @@ module.exports = class Characteristic {
 
   async initialize() {
     await this.send(new Buffer([0x03]));
-    await this.read();
-    // await this.setTime();
+    // await this.read();
   }
 
-  static async setTime(f1, f2) {
+  static async setTime(f1, f2, callback) {
     f2.chr.subscribe(err => {
       if (err) return console.log(err);
       console.log('[Subscribe]', f2.address, f2.uuid);
@@ -52,11 +51,7 @@ module.exports = class Characteristic {
     var t = new Timer();
     var isSendTime = false;
 
-    t.start();
-
-    await f1.send(new Buffer([0x00]));
-
-    f2.chr.on('data', async (data, isNotification) => {
+    f2.chr.once('data', async (data, isNotification) => {
       // console.log('[Notify]', this.address, this.uuid, data);
       console.log(data);
 
@@ -64,9 +59,15 @@ module.exports = class Characteristic {
         t.end();
         console.log(t);
         console.log(t.toBuffer());
-        await f1.send(t.toBuffer());
+        f1.send(t.toBuffer());
         isSendTime = true;
+      } else {
+        callback();
       }
     });
+
+    t.start();
+
+    await f1.send(new Buffer([0x00]));
   }
 };
