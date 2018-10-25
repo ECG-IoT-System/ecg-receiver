@@ -2,7 +2,8 @@ const Peripheral = require('../models/peripheral');
 const Characteristic = require('../models/characteristic');
 const Timer = require('../models/timer');
 const Packet = require('../models/packet');
-const wisepaas = require('../adapter/wisepaas');
+// const wisepaas = require('../adapter/wisepaas');
+const phpserver = require('../adapter/phpServer');
 
 var list = [];
 
@@ -91,7 +92,7 @@ module.exports = async function(peripheral) {
     var packet = new Packet(data);
 
     if (packet.sequence == 1) {
-      timediff.push(new Date().getTime());
+      timediff.push(packet.getTime());
 
       if (timediff.length > 2) {
         timediff.shift();
@@ -100,7 +101,8 @@ module.exports = async function(peripheral) {
       if (timediff.length == 2) {
         // send(topic, msg)
         console.log('\x1b[36m [Recieve] ', peripheral.address, '\x1b[0m');
-        wisepaas.send(timediff, signals, peripheral);
+        // wisepaas.send(timediff, signals, peripheral);
+        phpserver.send(timediff, signals, peripheral);
       }
 
       signals = [];

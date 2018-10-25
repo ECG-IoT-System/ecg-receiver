@@ -32,6 +32,10 @@ module.exports = class Packet {
     console.log(this.data);
   }
 
+  getTime() {
+    return new Date().setHours(this.hour, this.minute, this.second, this.millisecond);
+  }
+
   parse() {
     this.ecgSignal = [];
     this.gSensor = [];
