@@ -39,7 +39,15 @@ client.on('error', function(err) {
 //   console.log('pub', msg);
 // }, 1000);
 
-exports.send = function(topic, msg) {
-  client.publish(topic, msg);
+exports.send = function(time, data, peri) {
+  var topic = 'wisepaas/device/' + peri.uuid;
+  client.publish(
+    topic,
+    JSON.stringify({
+      start_at: time[0],
+      end_at: time[1],
+      signals: data,
+    }),
+  );
   console.log('pub');
 };

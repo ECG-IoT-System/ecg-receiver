@@ -100,14 +100,7 @@ module.exports = async function(peripheral) {
       if (timediff.length == 2) {
         // send(topic, msg)
         console.log('\x1b[36m [Recieve] ', peripheral.address, '\x1b[0m');
-        wisepaas.send(
-          'wisepaas/device/' + peripheral.uuid,
-          JSON.stringify({
-            start_at: timediff[0],
-            end_at: timediff[1],
-            signals: signals,
-          }),
-        );
+        wisepaas.send(timediff, signals, peripheral);
       }
 
       signals = [];
