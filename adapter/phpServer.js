@@ -27,7 +27,7 @@ exports.send = function(time, data, peri) {
   });
 
   var options = {
-    uri: 'https://3-dot-ecgproject-1069.appspot.com/',
+    uri: 'https://ecgproject-1069.appspot.com/',
     method: 'POST',
     json: body,
   };
