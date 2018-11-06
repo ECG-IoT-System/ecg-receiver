@@ -102,7 +102,7 @@ module.exports = async function(peripheral) {
         // send(topic, msg)
         console.log('\x1b[36m [Recieve] ', peripheral.address, '\x1b[0m');
         // wisepaas.send(timediff, signals, peripheral);
-        phpserver.send(timediff, signals, peripheral);
+        phpserver.send([packet.getTime() - 1000, packet.getTime()], signals, peripheral);
       }
 
       signals = [];
@@ -131,7 +131,7 @@ module.exports = async function(peripheral) {
     }).then(() => {
       f3.send(new Buffer([0xff]));
     });
-  }, 1000);
+  }, 700);
 
   timerB = setInterval(function() {
     // f1.setTime();

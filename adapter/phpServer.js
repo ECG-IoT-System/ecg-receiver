@@ -1,17 +1,22 @@
 var request = require('request');
 
 var deviceMapping = {
-  cc78abad4072: 0, // 64
-  a0e6f8fefadd: 1, // 65
-  a0e6f8fefc6c: 2, // 66
+  cc78abad4072: [0, 'https://3-dot-ecgproject-1069.appspot.com/'], // 64
+  a0e6f8fefadd: [1, 'https://3-dot-ecgproject-1069.appspot.com/'], // 65
+  a0e6f8fefc6c: [2, 'https://3-dot-ecgproject-1069.appspot.com/'], // 66
+  cc78abad40b2: [0, 'https://phpserver-dot-ecgproject-1069.appspot.com/'], // 84
+  a0e6f8fefb21: [1, 'https://phpserver-dot-ecgproject-1069.appspot.com/'], // 41
+  cc78abad40a6: [2, 'https://phpserver-dot-ecgproject-1069.appspot.com/'], // 86
+  // a0e6f8fefc42: [1, 'https://phpserver-dot-ecgproject-1069.appspot.com/'], // 85, dead
 };
 
 exports.send = function(time, data, peri) {
   // [[{"count":256},{"deviceid":0,"time":32377166,"data":-0.061694335937500004}, ... ]
   var mac_address = peri.address.replace(/:/g, '');
-  var deviceid = deviceMapping[mac_address];
+  var device = deviceMapping[mac_address];
 
-  if (!deviceid) return console.log('[PHPSERVER] Packet Discard');
+  // if (typeof device !== 'number') return console.log('[PHPSERVER] Packet Discard');
+  if (!device) return console.log('[PHPSERVER] Packet Discard');
 
   var count = data.length;
   var sample_rate = (time[1] - time[0]) / count;
@@ -20,14 +25,14 @@ exports.send = function(time, data, peri) {
 
   data.forEach((d, index) => {
     body.push({
-      deviceid,
+      deviceid: device[0],
       time: time[0] + index * sample_rate,
       data: d,
     });
   });
 
   var options = {
-    uri: 'https://ecgproject-1069.appspot.com/',
+    uri: device[1],
     method: 'POST',
     json: body,
   };
