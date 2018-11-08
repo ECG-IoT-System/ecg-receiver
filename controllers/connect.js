@@ -123,7 +123,7 @@ module.exports = async function(peripheral) {
   var counter = 0;
   timerA = setInterval(async function() {
     new Promise((resolve, reject) => {
-      if (counter++ % 2 == 0) {
+      if (counter++ % 10 !== 0) {
         resolve();
       } else {
         Characteristic.setTime(f1, f2, resolve);
@@ -131,7 +131,7 @@ module.exports = async function(peripheral) {
     }).then(() => {
       f3.send(new Buffer([0xff]));
     });
-  }, 700);
+  }, 800);
 
   timerB = setInterval(function() {
     // f1.setTime();

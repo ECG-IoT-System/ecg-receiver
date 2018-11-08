@@ -1,21 +1,46 @@
 var request = require('request');
 
-var deviceMapping = {
-  cc78abad4072: [0, 'https://3-dot-ecgproject-1069.appspot.com/'], // 64
-  a0e6f8fefadd: [1, 'https://3-dot-ecgproject-1069.appspot.com/'], // 65
-  a0e6f8fefc6c: [2, 'https://3-dot-ecgproject-1069.appspot.com/'], // 66
-  cc78abad40b2: [0, 'https://phpserver-dot-ecgproject-1069.appspot.com/'], // 84
-  a0e6f8fefb21: [1, 'https://phpserver-dot-ecgproject-1069.appspot.com/'], // 41
-  cc78abad40a6: [2, 'https://phpserver-dot-ecgproject-1069.appspot.com/'], // 86
-  // a0e6f8fefc42: [1, 'https://phpserver-dot-ecgproject-1069.appspot.com/'], // 85, dead
+var urls = {
+  version3: 'https://3-dot-ecgproject-1069.appspot.com/',
+  phpserver: 'https://phpserver-dot-ecgproject-1069.appspot.com/',
 };
+
+// key can't be 0
+var devices = {
+  // 8 dead
+  10: 'a0e6f8ffbeb5',
+  14: 'a0e6f8fefc6b',
+  15: 'cc78abad400b',
+  16: 'cc78abad2356',
+  27: 'cc78abad24b8',
+  41: 'a0e6f8fefb21',
+  64: 'cc78abad4072',
+  65: 'a0e6f8fefadd',
+  66: 'a0e6f8fefc6c', // unstabled
+  84: 'cc78abad40b2',
+  85: 'a0e6f8fefc42', // dead
+  86: 'cc78abad40a6',
+};
+
+var deviceMapping = {
+  [devices[64]]: {id: 0, url: urls.version3},
+  [devices[65]]: {id: 1, url: urls.version3},
+  [devices[27]]: {id: 2, url: urls.version3},
+  // [devices[84]]: {id: 0, url: urls.phpserver},
+  // [devices[41]]: {id: 1, url: urls.phpserver},
+  // [devices[86]]: {id: 2, url: urls.phpserver},
+};
+
+function getKeyByValue(object, value) {
+  return Object.keys(object).find(key => object[key] === value);
+}
 
 exports.send = function(time, data, peri) {
   // [[{"count":256},{"deviceid":0,"time":32377166,"data":-0.061694335937500004}, ... ]
   var mac_address = peri.address.replace(/:/g, '');
   var device = deviceMapping[mac_address];
 
-  // if (typeof device !== 'number') return console.log('[PHPSERVER] Packet Discard');
+  // if (typeof device_id !== 'number') return console.log('[PHPSERVER] Packet Discard');
   if (!device) return console.log('[PHPSERVER] Packet Discard');
 
   var count = data.length;
@@ -25,14 +50,14 @@ exports.send = function(time, data, peri) {
 
   data.forEach((d, index) => {
     body.push({
-      deviceid: device[0],
+      deviceid: device.id,
       time: time[0] + index * sample_rate,
       data: d,
     });
   });
 
   var options = {
-    uri: device[1],
+    uri: device.url,
     method: 'POST',
     json: body,
   };
