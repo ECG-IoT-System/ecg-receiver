@@ -23,7 +23,7 @@ var devices = {
 };
 
 var deviceMapping = {
-  [devices[27]]: {id: 0, url: urls.version3},
+  [devices[10]]: {id: 0, url: urls.version3},
   [devices[41]]: {id: 1, url: urls.version3},
   [devices[86]]: {id: 2, url: urls.version3},
 
@@ -36,16 +36,12 @@ var deviceMapping = {
   [devices[16]]: {id: 2, url: urls.version3},
 };
 
-function getKeyByValue(object, value) {
-  return Object.keys(object).find(key => object[key] === value);
-}
-
+// Data Format
+// [[{"count":256},{"deviceid":0,"time":32377166,"data":-0.061694335937500004}, ... ]
 exports.send = function(time, data, peri) {
-  // [[{"count":256},{"deviceid":0,"time":32377166,"data":-0.061694335937500004}, ... ]
   var mac_address = peri.address.replace(/:/g, '');
   var device = deviceMapping[mac_address];
 
-  // if (typeof device_id !== 'number') return console.log('[PHPSERVER] Packet Discard');
   if (!device) return console.log('[PHPSERVER] Packet Discard');
 
   var count = data.length;
@@ -72,5 +68,6 @@ exports.send = function(time, data, peri) {
       console.log(body); // Print the shortened url.
     }
   });
+
   console.log('[PHPSERVER] Packet Sent');
 };
