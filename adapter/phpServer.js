@@ -36,13 +36,19 @@ var deviceMapping = {
   [devices[16]]: {id: 2, url: urls.version3},
 };
 
+
+function getKeyByValue(object , value){
+  return Object.keys(object).find(key => object[key] === value);
+}
+
 // Data Format
 // [[{"count":256},{"deviceid":0,"time":32377166,"data":-0.061694335937500004}, ... ]
 exports.send = function(time, data, peri) {
   var mac_address = peri.address.replace(/:/g, '');
   var device = deviceMapping[mac_address];
+  var pad_id = getKeyByValue(devices, mac_address);
 
-  if (!device) return console.log('[PHPSERVER] Packet Discard');
+  if (!device) return console.log('\x1b[31m', '[PHPSERVER] Packet Discard. pad:', pad_id, 'device id:', device.id, '\x1b[0m');
 
   var count = data.length;
   var sample_rate = (time[1] - time[0]) / count;
@@ -65,9 +71,9 @@ exports.send = function(time, data, peri) {
 
   request(options, function(error, response, body) {
     if (!error && response.statusCode == 200) {
-      console.log(body); // Print the shortened url.
+      // do some thing
     }
   });
 
-  console.log('[PHPSERVER] Packet Sent');
+  console.log('\x1b[32m', '[PHPSERVER] Packet Sent. pad:', pad_id, 'device id:', device.id, '\x1b[0m');
 };

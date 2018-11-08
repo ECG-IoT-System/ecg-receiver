@@ -10,7 +10,7 @@ module.exports = class Characteristic {
   send(content) {
     return new Promise((resolve, reject) => {
       this.chr.write(content, true, err => {
-        console.log('[Write]', this.address, this.uuid, content);
+        // console.log('[Write]', this.address, this.uuid, content);
         resolve(content);
       });
     });

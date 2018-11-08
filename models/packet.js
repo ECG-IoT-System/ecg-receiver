@@ -18,18 +18,18 @@ module.exports = class Packet {
   }
 
   print() {
-    if (this.sequence == 1) {
-      console.log('\x1b[33mid\tseq\thr\tmin\tsec\tms\tdebug\x1b[0m');
-    }
+    // if (this.sequence == 1) {
+    //   console.log('\x1b[33mid\tseq\thr\tmin\tsec\tms\tdebug\x1b[0m');
+    // }
 
     var color = this.sequence <= 3 ? 32 : this.sequence == 255 ? 35 : 31;
-    console.log(
-      `\x1b[${color}m${this.id}\t${this.sequence}\t${this.hour}\t${this.minute}\t${this.second}\t${this.millisecond}\t${
-        this.debug
-      }\x1b[0m`,
-    );
+    // console.log(
+    //   `\x1b[${color}m${this.id}\t${this.sequence}\t${this.hour}\t${this.minute}\t${this.second}\t${this.millisecond}\t${
+    //     this.debug
+    //   }\x1b[0m`,
+    // );
 
-    console.log(this.data);
+    // console.log(this.data);
   }
 
   getTime() {
