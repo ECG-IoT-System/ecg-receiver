@@ -33,7 +33,7 @@ module.exports = class Packet {
   }
 
   getTime() {
-    return new Date().setHours(this.hour, this.minute, this.second, this.millisecond);
+    return new Date().setUTCHours(this.hour, this.minute, this.second, this.millisecond);
   }
 
   parse() {

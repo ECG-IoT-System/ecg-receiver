@@ -1,8 +1,8 @@
 var request = require('request');
 
 var urls = {
-  version3: 'https://3-dot-ecgproject-1069.appspot.com/',
-  phpserver: 'https://phpserver-dot-ecgproject-1069.appspot.com/',
+  version3: 'https://3-dot-ecgproject-1069.appspot.com/', // ECG3LTIME
+  phpserver: 'https://phpserver-dot-ecgproject-1069.appspot.com/', // ECG3LTIME_Advantech
 };
 
 // key can't be 0
@@ -19,16 +19,21 @@ var devices = {
   66: 'a0e6f8fefc6c', // unstabled
   84: 'cc78abad40b2',
   85: 'a0e6f8fefc42', // dead
-  86: 'cc78abad40a6',
+  86: 'cc78abad40a6', // unstabled
 };
 
 var deviceMapping = {
+  [devices[27]]: {id: 0, url: urls.version3},
+  [devices[41]]: {id: 1, url: urls.version3},
+  [devices[86]]: {id: 2, url: urls.version3},
+
   [devices[64]]: {id: 0, url: urls.version3},
   [devices[65]]: {id: 1, url: urls.version3},
-  [devices[27]]: {id: 2, url: urls.version3},
-  // [devices[84]]: {id: 0, url: urls.phpserver},
-  // [devices[41]]: {id: 1, url: urls.phpserver},
-  // [devices[86]]: {id: 2, url: urls.phpserver},
+  [devices[84]]: {id: 2, url: urls.version3},
+
+  [devices[14]]: {id: 0, url: urls.version3},
+  [devices[15]]: {id: 1, url: urls.version3},
+  [devices[16]]: {id: 2, url: urls.version3},
 };
 
 function getKeyByValue(object, value) {
