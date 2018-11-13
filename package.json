@@ -1,8 +1,8 @@
 {
-  "name": "bluez",
-  "version": "1.0.0",
+  "name": "ecg-receiver",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,8 +10,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/error-reporting": "^0.5.1",
+    "@google-cloud/logging-winston": "^0.9.0",
+    "async": "^2.6.1",
+    "big-number": "^1.0.0",
+    "mqtt": "^2.18.8",
     "nano-time": "^1.0.0",
     "noble": "^1.9.1",
-    "rxjs": "^6.2.2"
+    "request": "^2.88.0",
+    "winston": "^3.0.0"
   }
 }

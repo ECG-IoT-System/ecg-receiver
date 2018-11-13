@@ -8,6 +8,8 @@ const phpserver = require('../adapter/phpServer');
 var list = [];
 
 module.exports = async function(peripheral) {
+  if (list.indexOf(peripheral.address) > -1) return console.log('[Peripheral] Duplication connection', peripheral.address);
+
   var timerA = null;
   var timerB = null;
 
