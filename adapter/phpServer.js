@@ -48,7 +48,7 @@ exports.send = function(time, data, peri) {
   var device = deviceMapping[mac_address];
   var pad_id = getKeyByValue(devices, mac_address);
 
-  if (!device) return console.log('\x1b[31m', '[PHPSERVER] Packet Discard. pad:', pad_id, 'device id:', device.id, '\x1b[0m');
+  if (!device) return console.log('\x1b[31m', '[PHPSERVER] Packet Discard. pad:', pad_id, '\x1b[0m');
 
   var count = data.length;
   var sample_rate = (time[1] - time[0]) / count;

@@ -13,10 +13,6 @@ module.exports = async function(peripheral) {
   var timerA = null;
   var timerB = null;
 
-  peripheral.once('rssiUpdate', function(rssi){
-    console.log("RSSI:", peripheral.address, rssi);
-  });
-
   peripheral.once('connect', function(a) {
     list.push(peripheral.address);
     console.log('\x1b[36m', list, '\x1b[0m');
@@ -109,6 +105,11 @@ module.exports = async function(peripheral) {
         console.log('\x1b[36m [Recieve] ', peripheral.address, '\x1b[0m');
         // wisepaas.send(timediff, signals, peripheral);
         phpserver.send([packet.getTime() - 1000, packet.getTime()], signals, peripheral);
+
+        peripheral.peripheral.updateRssi(function(err, rssi){
+          if (err) return console.error('RSSI:', err);
+          console.log('RSSI:', peripheral.address, rssi);
+        });
       }
 
       signals = [];
