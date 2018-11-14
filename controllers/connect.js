@@ -110,8 +110,8 @@ module.exports = async function(peripheral) {
         peripheral.peripheral.updateRssi(function(err, rssi){
           if (err) return console.error('RSSI:', err);
           console.log('RSSI:', peripheral.address, rssi);
-        });
-        phpRssiserver.sendRssi([packet.getTime() - 1000, packet.getTime()], rssi, peripheral);
+          phpRssiserver.sendRssi([packet.getTime() - 1000, packet.getTime()], rssi, peripheral);
+      });
 
       }
 

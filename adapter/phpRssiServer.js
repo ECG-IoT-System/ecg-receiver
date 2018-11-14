@@ -50,9 +50,6 @@ exports.sendRssi = function(time, rssi, peri) {
 
   if (!device) return console.log('\x1b[31m', '[PHPSERVER] Packet Discard. pad:', pad_id, '\x1b[0m');
 
-  var count = data.length;
-  var sample_rate = (time[1] - time[0]) / count;
-
   var body = {
     Pad_id:pad_id,
     Mac:mac_address,
