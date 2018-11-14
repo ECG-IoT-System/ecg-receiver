@@ -4,6 +4,7 @@ const Timer = require('../models/timer');
 const Packet = require('../models/packet');
 // const wisepaas = require('../adapter/wisepaas');
 const phpserver = require('../adapter/phpServer');
+const phpRssiserver = require('../adapter/phpRssiServer');
 
 var list = [];
 
@@ -105,11 +106,13 @@ module.exports = async function(peripheral) {
         console.log('\x1b[36m [Recieve] ', peripheral.address, '\x1b[0m');
         // wisepaas.send(timediff, signals, peripheral);
         phpserver.send([packet.getTime() - 1000, packet.getTime()], signals, peripheral);
-
+        
         peripheral.peripheral.updateRssi(function(err, rssi){
           if (err) return console.error('RSSI:', err);
           console.log('RSSI:', peripheral.address, rssi);
         });
+        phpRssiserver.sendRssi([packet.getTime() - 1000, packet.getTime()], rssi, peripheral);
+
       }
 
       signals = [];
