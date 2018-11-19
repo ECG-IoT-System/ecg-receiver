@@ -46,7 +46,7 @@ exports.sendRssi = function(time, data, mac, rssi) {
   var device = deviceMapping[mac];
   var pad_id = getKeyByValue(devices, mac);
 
-  if (!device) return console.log('\x1b[31m', '[PHPSERVER] Packet Discard. pad:', pad_id, '\x1b[0m');
+  if (!device) return console.log('\x1b[31m', '[PHPRSSISERVER] Packet Discard. pad:', pad_id, '\x1b[0m');
 
   var body = {
     Pad_id: pad_id,
@@ -67,5 +67,5 @@ exports.sendRssi = function(time, data, mac, rssi) {
     }
   });
 
-  console.log('\x1b[32m', '[PHPSERVER] Packet Sent. pad:', pad_id, 'device id:', device.id, '\x1b[0m');
+  console.log('\x1b[32m', '[PHPRSSISERVER] Packet Sent. pad:', pad_id, 'device id:', device.id, '\x1b[0m');
 };
