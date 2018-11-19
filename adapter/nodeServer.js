@@ -9,7 +9,7 @@ exports.send = function(time, data, mac, rssi) {
   };
 
   var options = {
-    uri: 'https://phpserver-dot-ecgproject-1069.appspot.com/upload/gateway',
+    uri: 'https://node-server-dot-ecgproject-1069.appspot.com/upload/gateway',
     method: 'POST',
     json: body,
   };

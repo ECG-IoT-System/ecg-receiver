@@ -93,44 +93,47 @@ module.exports = async function(peripheral) {
 
   var signals = [];
   var timediff = [];
+  let mac = peripheral.address.replace(/:/g, '');
   f4.notify((data, isNotification) => {
-    var packet = new Packet(data);
-
-    if (packet.sequence == 1) {
-      timediff.push(packet.getTime());
-
-      if (timediff.length > 2) {
-        timediff.shift();
-      }
-
-      if (timediff.length == 2) {
-        let mac = peripheral.address.replace(/:/g, '');
-
-        console.log('\x1b[36m [Recieve] ', mac, '\x1b[0m');
-
-        peripheral.peripheral.updateRssi(function(err, rssi) {
-          if (err) return console.error('RSSI:', err);
-          console.log('RSSI:', mac, rssi);
-
-          // wisepaas.send(timediff, signals, peripheral, );
-          phpserver.send([packet.getTime() - 1000, packet.getTime()], signals, mac, rssi);
-          phpRssiserver.sendRssi([packet.getTime() - 1000, packet.getTime()], signals, mac, rssi);
-          nodeserver.send([packet.getTime() - 1000, packet.getTime()], signals, mac, rssi);
-        });
-      }
-
-      signals = [];
-    }
+    let packet = new Packet(data);
 
     signals = signals.concat(packet.get());
 
-    var debug = true;
-
-    if (debug) {
-      packet.print();
+    if (packet.sequence == 1) {
+      timediff.push(packet.getTime());
     }
-    if (!debug && (packet.sequence > 3 || packet.sequence == 0)) {
-      packet.print();
+
+    if (timediff.length > 2) {
+      timediff.shift();
+    }
+
+    if (packet.sequence == 3 && timediff.length == 2) {
+      function clone(a) {
+        return JSON.parse(JSON.stringify(a));
+      }
+
+      console.log('\x1b[36m [Recieve] ', mac, '\x1b[0m');
+
+      // clone current data
+      let _signals = JSON.parse(JSON.stringify(signals));
+      let _timediff = JSON.parse(JSON.stringify(timediff));
+
+      peripheral.peripheral.updateRssi(function(err, rssi) {
+        if (err) return console.error('RSSI:', err);
+        // console.log(2, { mac, timediff, length: _signals.length, getTime: packet.getTime() })
+
+        if (_timediff[1] - _timediff[0] > 1500) {
+          _timediff[0] = _timediff[1] - 1000;
+        }
+
+        if (_signals.length !== 256) return console.log('data.length is', _signals.length, '. not equal 256');
+
+        phpserver.send(_timediff, _signals, mac, rssi);
+        phpRssiserver.sendRssi(_timediff, _signals, mac, rssi);
+        nodeserver.send(_timediff, _signals, mac, rssi);
+      });
+
+      signals = [];
     }
   });
 
