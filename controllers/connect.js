@@ -9,7 +9,8 @@ const phpRssiserver = require('../adapter/phpRssiServer');
 var list = [];
 
 module.exports = async function(peripheral) {
-  if (list.indexOf(peripheral.address) > -1) return console.log('[Peripheral] Duplication connection', peripheral.address);
+  if (list.indexOf(peripheral.address) > -1)
+    return console.log('[Peripheral] Duplication connection', peripheral.address);
 
   var timerA = null;
   var timerB = null;
@@ -102,17 +103,19 @@ module.exports = async function(peripheral) {
       }
 
       if (timediff.length == 2) {
-        // send(topic, msg)
-        console.log('\x1b[36m [Recieve] ', peripheral.address, '\x1b[0m');
-        // wisepaas.send(timediff, signals, peripheral);
-        phpserver.send([packet.getTime() - 1000, packet.getTime()], signals, peripheral);
-        
-        peripheral.peripheral.updateRssi(function(err, rssi){
-          if (err) return console.error('RSSI:', err);
-          console.log('RSSI:', peripheral.address, rssi);
-          phpRssiserver.sendRssi([packet.getTime() - 1000, packet.getTime()], rssi, peripheral);
-      });
+        let mac = peripheral.address.replace(/:/g, '');
 
+        console.log('\x1b[36m [Recieve] ', mac, '\x1b[0m');
+
+        peripheral.peripheral.updateRssi(function(err, rssi) {
+          if (err) return console.error('RSSI:', err);
+          console.log('RSSI:', mac, rssi);
+
+          // wisepaas.send(timediff, signals, peripheral, );
+          phpserver.send([packet.getTime() - 1000, packet.getTime()], signals, mac, rssi);
+          phpRssiserver.sendRssi([packet.getTime() - 1000, packet.getTime()], signals, mac, rssi);
+          nodeserver.send([packet.getTime() - 1000, packet.getTime()], signals, mac, rssi);
+        });
       }
 
       signals = [];

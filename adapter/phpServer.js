@@ -36,17 +36,15 @@ var deviceMapping = {
   [devices[16]]: {id: 2, url: urls.version3},
 };
 
-
-function getKeyByValue(object , value){
+function getKeyByValue(object, value) {
   return Object.keys(object).find(key => object[key] === value);
 }
 
 // Data Format
 // [[{"count":256},{"deviceid":0,"time":32377166,"data":-0.061694335937500004}, ... ]
-exports.send = function(time, data, peri) {
-  var mac_address = peri.address.replace(/:/g, '');
-  var device = deviceMapping[mac_address];
-  var pad_id = getKeyByValue(devices, mac_address);
+exports.send = function(time, data, mac, rssi) {
+  var device = deviceMapping[mac];
+  var pad_id = getKeyByValue(devices, mac);
 
   if (!device) return console.log('\x1b[31m', '[PHPSERVER] Packet Discard. pad:', pad_id, '\x1b[0m');
 
