@@ -5,6 +5,7 @@ const Packet = require('../models/packet');
 // const wisepaas = require('../adapter/wisepaas');
 const phpserver = require('../adapter/phpServer');
 const phpRssiserver = require('../adapter/phpRssiServer');
+const nodeserver = require('../adapter/nodeServer');
 
 var list = [];
 
