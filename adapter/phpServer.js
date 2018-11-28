@@ -1,7 +1,7 @@
 var request = require('request');
 
 var urls = {
-  version3: 'https://3-dot-ecgproject-1069.appspot.com/', // ECG3LTIME
+  version3: 'https://ecgproject-1069.appspot.com/', // ECG3LTIME
   phpserver: 'https://phpserver-dot-ecgproject-1069.appspot.com/', // ECG3LTIME_Advantech
 };
 
@@ -23,17 +23,17 @@ var devices = {
 };
 
 var deviceMapping = {
-  [devices[10]]: {id: 0, url: urls.version3},
-  [devices[41]]: {id: 1, url: urls.version3},
-  [devices[86]]: {id: 2, url: urls.version3},
+  [devices[10]]: { id: 0, url: urls.version3 },
+  [devices[41]]: { id: 1, url: urls.version3 },
+  [devices[86]]: { id: 2, url: urls.version3 },
 
-  [devices[64]]: {id: 0, url: urls.version3},
-  [devices[65]]: {id: 1, url: urls.version3},
-  [devices[84]]: {id: 2, url: urls.version3},
+  [devices[64]]: { id: 0, url: urls.version3 },
+  [devices[65]]: { id: 1, url: urls.version3 },
+  [devices[84]]: { id: 2, url: urls.version3 },
 
-  [devices[14]]: {id: 0, url: urls.version3},
-  [devices[15]]: {id: 1, url: urls.version3},
-  [devices[16]]: {id: 2, url: urls.version3},
+  [devices[14]]: { id: 0, url: urls.version3 },
+  [devices[15]]: { id: 1, url: urls.version3 },
+  [devices[16]]: { id: 2, url: urls.version3 },
 };
 
 function getKeyByValue(object, value) {
@@ -42,7 +42,7 @@ function getKeyByValue(object, value) {
 
 // Data Format
 // [[{"count":256},{"deviceid":0,"time":32377166,"data":-0.061694335937500004}, ... ]
-exports.send = function(time, data, gdata, mac, rssi) {
+exports.send = function (time, data, gdata, mac, rssi) {
   var device = deviceMapping[mac];
   var pad_id = getKeyByValue(devices, mac);
 
@@ -50,10 +50,10 @@ exports.send = function(time, data, gdata, mac, rssi) {
 
   var count = data.length;
   var sample_rate = (time[1] - time[0]) / count;
-  var gcount = gdata.length/3;
+  var gcount = gdata.length / 3;
   var gsample_rate = (time[1] - time[0]) / gcount;
 
-  var body = [{count}];
+  var body = [{ count }];
 
   data.forEach((d, index) => {
     body.push({
@@ -62,14 +62,14 @@ exports.send = function(time, data, gdata, mac, rssi) {
       data: d,
     });
   });
-  for (let i=0 ; i < gcount ; i++ ){
+  for (let i = 0; i < gcount; i++) {
     body.push({
       gdeviceid: device.id,
-      gtime: time[0] + index * gsample_rate,
-      axisX: gdata[index*3],
-      axisY: gdata[index*3+1],
-      axisZ: gdata[index*3+2],
-      ComVec: gdata[index*3]+gdata[index*3+1]+gdata[index*3+2]
+      gtime: time[0] + i * gsample_rate,
+      axisX: gdata[i * 3],
+      axisY: gdata[i * 3 + 1],
+      axisZ: gdata[i * 3 + 2],
+      ComVec: gdata[i * 3] + gdata[i * 3 + 1] + gdata[i * 3 + 2]
     });
   }
 
@@ -79,7 +79,7 @@ exports.send = function(time, data, gdata, mac, rssi) {
     json: body,
   };
 
-  request(options, function(error, response, body) {
+  request(options, function (error, response, body) {
     if (!error && response.statusCode == 200) {
       // do some thing
     }
