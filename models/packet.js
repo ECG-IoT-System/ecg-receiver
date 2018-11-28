@@ -17,6 +17,10 @@ module.exports = class Packet {
     return this.ecgSignal;
   }
 
+  getGsensor(){
+    return this.gSensor;
+  }
+
   print() {
     // if (this.sequence == 1) {
     //   console.log('\x1b[33mid\tseq\thr\tmin\tsec\tms\tdebug\x1b[0m');

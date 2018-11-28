@@ -117,6 +117,7 @@ module.exports = async function(peripheral) {
       // clone current data
       let _signals = JSON.parse(JSON.stringify(signals));
       let _timediff = JSON.parse(JSON.stringify(timediff));
+      let _gsensor = JSON.parse(JSON.stringify(packet.getGsensor()));
 
       peripheral.peripheral.updateRssi(function(err, rssi) {
         if (err) return console.error('RSSI:', err);
@@ -130,7 +131,7 @@ module.exports = async function(peripheral) {
 
         phpserver.send(_timediff, _signals, mac, rssi);
         phpRssiserver.sendRssi(_timediff, _signals, mac, rssi);
-        nodeserver.send(_timediff, _signals, mac, rssi);
+        nodeserver.send(_timediff, _signals, _gsensor, mac, rssi);
       });
 
       signals = [];

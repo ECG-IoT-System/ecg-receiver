@@ -1,10 +1,11 @@
 var request = require('request');
 
-exports.send = function(time, data, mac, rssi) {
+exports.send = function(time, data, gsensor,mac, rssi) {
   var body = {
     mac,
     time,
     data,
+    gsensor,
     rssi,
   };
 
