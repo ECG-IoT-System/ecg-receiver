@@ -42,7 +42,7 @@ function getKeyByValue(object, value) {
 
 // Data Format
 // [[{"count":256},{"deviceid":0,"time":32377166,"data":-0.061694335937500004}, ... ]
-exports.send = function(time, data, mac, rssi) {
+exports.send = function(time, data, gdata, mac, rssi) {
   var device = deviceMapping[mac];
   var pad_id = getKeyByValue(devices, mac);
 
@@ -50,6 +50,8 @@ exports.send = function(time, data, mac, rssi) {
 
   var count = data.length;
   var sample_rate = (time[1] - time[0]) / count;
+  var gcount = gdata.length/3;
+  var gsample_rate = (time[1] - time[0]) / gcount;
 
   var body = [{count}];
 
@@ -60,6 +62,16 @@ exports.send = function(time, data, mac, rssi) {
       data: d,
     });
   });
+  for (let i=0 ; i < gcount ; i++ ){
+    body.push({
+      gdeviceid: device.id,
+      gtime: time[0] + index * gsample_rate,
+      axisX: gdata[index*3],
+      axisY: gdata[index*3+1],
+      axisZ: gdata[index*3+2],
+      ComVec: gdata[index*3]+gdata[index*3+1]+gdata[index*3+2]
+    });
+  }
 
   var options = {
     uri: device.url,
