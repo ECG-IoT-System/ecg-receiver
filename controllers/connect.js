@@ -6,6 +6,7 @@ const Packet = require('../models/packet');
 const phpserver = require('../adapter/phpServer');
 const phpRssiserver = require('../adapter/phpRssiServer');
 const nodeserver = require('../adapter/nodeServer');
+const nestserver = require('../adapter/nestServer');
 
 var list = [];
 
@@ -130,8 +131,9 @@ module.exports = async function(peripheral) {
         if (_signals.length !== 256) return console.log('data.length is', _signals.length, '. not equal 256');
 
         phpserver.send(_timediff, _signals, _gsensor, mac, rssi);
-        phpRssiserver.sendRssi(_timediff, _signals, mac, rssi);
+        // phpRssiserver.sendRssi(_timediff, _signals, mac, rssi);
         nodeserver.send(_timediff, _signals, _gsensor, mac, rssi);
+        // nestserver.send(_timediff, _signals, _gsensor, mac, rssi);
       });
 
       signals = [];
