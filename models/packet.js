@@ -13,6 +13,12 @@ module.exports = class Packet {
     this.parse();
   }
 
+  parse_nxp_packet() {
+    for (var i = 0; i < 30; i++) {
+      this.ecgSignal.push(this.body.readInt16BE(2 * i, 2) / 32768 * 1.5 * 1.2);
+    }
+  }
+
   get() {
     return this.ecgSignal;
   }

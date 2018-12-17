@@ -7,6 +7,7 @@ const phpserver = require('../adapter/phpServer');
 const phpRssiserver = require('../adapter/phpRssiServer');
 const nodeserver = require('../adapter/nodeServer');
 const nestserver = require('../adapter/nestServer');
+const saveTxt = require('../adapter/saveTxt');
 
 var list = [];
 
@@ -98,6 +99,10 @@ module.exports = async function(peripheral) {
   f4.notify((data, isNotification) => {
     let packet = new Packet(data);
 
+    packet.parse_nxp_packet();
+    console.log(packet.get())
+    saveTxt.send([], packet.get(), [], mac, 0);
+
     signals = signals.concat(packet.get());
 
     if (packet.sequence == 1) {
@@ -130,9 +135,9 @@ module.exports = async function(peripheral) {
 
         if (_signals.length !== 256) return console.log('data.length is', _signals.length, '. not equal 256');
 
-        phpserver.send(_timediff, _signals, _gsensor, mac, rssi);
+        // phpserver.send(_timediff, _signals, _gsensor, mac, rssi);
         // phpRssiserver.sendRssi(_timediff, _signals, mac, rssi);
-        nodeserver.send(_timediff, _signals, _gsensor, mac, rssi);
+        // nodeserver.send(_timediff, _signals, _gsensor, mac, rssi);
         // nestserver.send(_timediff, _signals, _gsensor, mac, rssi);
       });
 

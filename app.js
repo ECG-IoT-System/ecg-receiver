@@ -18,7 +18,8 @@ noble.on('stateChange', function(state) {
 });
 
 noble.on('discover', function(peripheral) {
-  if (peripheral.advertisement.localName !== 'SimpleBLEPeripheral') return;
+  let localname = peripheral.advertisement.localName;
+  if (localname !== 'SimpleBLEPeripheral' && localname !== 'NXP_QPP') return;
   console.log('Discovered: ' + peripheral.address, peripheral.advertisement.localName);
 
   noble.stopScanning();
