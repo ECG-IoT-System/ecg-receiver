@@ -1,62 +1,61 @@
-const fs = require('fs');
+const Sequelize = require('sequelize');
+const sequelize = new Sequelize('ecgData', null, null, {
+  dialect: 'sqlite',
+  storage: './test.db',
+});
 
-let count = 0;
-let sqlite_count = 0;
+sequelize.authenticate().then(
+  function(err) {
+    console.log('Connection has been established successfully.');
+  },
+  function(err) {
+    console.log('Unable to connect to the database:', err);
+  },
+);
 
-/* add sqlite function */
-var file = "./test.db";
-// load sqlite3
-var sqlite3 = require("sqlite3").verbose();
-// new a sqlite database, filename is test.db
-var db = new sqlite3.Database(file);
+//  MODELS
+var EcgData = sequelize.define('ecgData', {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+  },
+  time: Sequelize.DATE,
+  value: Sequelize.DOUBLE,
+});
 
+EcgData.sync();
 
-exports.send = function(time, data, gsensor,mac, rssi) {
+//  SYNC SCHEMA
+sequelize.sync({force: true}).then(
+  function(err) {
+    console.log('It worked!');
+    exports.send = send;
+  },
+  function(err) {
+    console.log('An error occurred while creating the table:', err);
+  },
+);
+
+function send(time, data, gsensor, mac, rssi) {
   console.log(time);
 
-  /* save way1 : save into .txt */
+  var count = data.length;
+  var sample_rate = (time[1] - time[0]) / count;
 
-  let str = '';
-  data.forEach(d => {
-    str += count + "\t" + d + "\n";
-    count++
-  })
-  filename = 'out.txt';
-  fs.appendFile(filename, str, function(err) {
-    if (err) {
-      return console.log(err)
-    }
-  })
+  var body = [];
 
-  console.log('\x1b[32m', '[SAVETXT] ', mac, '\x1b[0m');
-
-  /* save way2 : save into sqlite */
-  db.serialize(function(){
-    //db.run => if ecgData data table isn't exist, then build a new one
-    db.run("CREATE TABLE IF NOT EXISTS ecgData (thing TEXT)");
-    var stmt = db.prepare("INSERT INTO ecgData VALUES (?)");
-
-    // Test for write in 10 data
-    /*
-    for (var i = 0; i < 10; i++){
-      stmt.run("staff_number"+i);
-    }
-    */
-
-    // Write in the received data
-    data.forEach(gg => {
-	stmt.run(gg);
-    })
-	
-	
-    stmt.finalize();
-	
-    db.each("SELECT rowid AS id, thing FROM ecgData", function(err,row){
-      //log out show all data
-      console.log(row.id + ": " + row.thing);
-      });
+  data.forEach((d, index) => {
+    body.push({
+      time: time[0] + index * sample_rate,
+      value: d,
+    });
   });
-  db.close();
 
-
-};
+  EcgData.bulkCreate(body)
+    .then(() => {
+      return EcgData.findAll();
+    })
+    .then(ecgdata => {
+      console.log(ecgdata);
+    });
+}

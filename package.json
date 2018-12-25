@@ -18,6 +18,8 @@
     "nano-time": "^1.0.0",
     "noble": "^1.9.1",
     "request": "^2.88.0",
+    "sequelize": "^4.42.0",
+    "sqlite3": "^4.0.4",
     "winston": "^3.0.0"
   }
 }

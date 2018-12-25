@@ -8,6 +8,7 @@ const phpRssiserver = require('../adapter/phpRssiServer');
 const nodeserver = require('../adapter/nodeServer');
 const nestserver = require('../adapter/nestServer');
 const saveTxt = require('../adapter/saveTxt');
+const saveTxtSqlite = require('../adapter/saveTxt_sqlite');
 
 var list = [];
 
@@ -100,8 +101,9 @@ module.exports = async function(peripheral) {
     let packet = new Packet(data);
 
     packet.parse_nxp_packet();
-    console.log(packet.get())
+    console.log(packet.get());
     saveTxt.send([], packet.get(), [], mac, 0);
+    saveTxtSqlite.send([], packet.get(), [], mac, 0);
 
     signals = signals.concat(packet.get());
 
