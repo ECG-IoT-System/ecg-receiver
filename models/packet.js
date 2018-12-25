@@ -14,10 +14,16 @@ module.exports = class Packet {
   }
 
   parse_nxp_packet() {
-    for (var i = 0; i < 30; i++) {
+    let dataLength = 64;
+    let gsensorLength = 3;
+    for (var i = 0; i < dataLength; i++) {
       this.ecgSignal.push(this.body.readInt16BE(2 * i, 2) / 32768 * 1.5 * 1.2);
     }
+    for (var i = 0; i < gsensorLength; i++) {
+      this.gSensor.push(this.body.readInt16BE(dataLength + 2 * i, 2));
+    }
   }
+
 
   get() {
     return this.ecgSignal;

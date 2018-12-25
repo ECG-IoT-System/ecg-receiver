@@ -100,8 +100,9 @@ module.exports = async function(peripheral) {
     let packet = new Packet(data);
 
     packet.parse_nxp_packet();
-    console.log(packet.get())
-    saveTxt.send([], packet.get(), [], mac, 0);
+    console.log(packet.get());
+    console.log(packet.getGsensor());
+    saveTxt.send([],packet.get(), [], mac, 0);
 
     signals = signals.concat(packet.get());
 
