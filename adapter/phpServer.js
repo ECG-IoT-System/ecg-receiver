@@ -1,7 +1,7 @@
 var request = require('request');
 
 var urls = {
-  version3: 'https://ecgproject-1069.appspot.com/', // ECG3LTIME
+  //version3: 'https://ecgproject-1069.appspot.com/', // ECG3LTIME
   phpserver: 'https://phpserver-dot-ecgproject-1069.appspot.com/', // ECG3LTIME_Advantech
 };
 
@@ -23,18 +23,19 @@ var devices = {
 };
 
 var deviceMapping = {
-  [devices[10]]: { id: 0, url: urls.version3 },
-  [devices[41]]: { id: 1, url: urls.version3 },
-  [devices[86]]: { id: 2, url: urls.version3 },
+  [devices[10]]: { id: 0, url: urls.phpserver },
+  [devices[41]]: { id: 1, url: urls.phpserver },
+  [devices[86]]: { id: 2, url: urls.phpserver },
 
-  [devices[64]]: { id: 0, url: urls.version3 },
-  [devices[65]]: { id: 1, url: urls.version3 },
-  [devices[84]]: { id: 2, url: urls.version3 },
+  [devices[64]]: { id: 0, url: urls.phpserver },
+  [devices[65]]: { id: 1, url: urls.phpserver },
+  [devices[84]]: { id: 2, url: urls.phpserver },
 
-  [devices[14]]: { id: 0, url: urls.version3 },
-  [devices[15]]: { id: 1, url: urls.version3 },
-  [devices[16]]: { id: 2, url: urls.version3 },
-};
+  [devices[14]]: { id: 0, url: urls.phpserver },
+  [devices[15]]: { id: 1, url: urls.phpserver },
+  [devices[16]]: { id: 2, url: urls.phpserver },
+}
+
 
 function getKeyByValue(object, value) {
   return Object.keys(object).find(key => object[key] === value);
